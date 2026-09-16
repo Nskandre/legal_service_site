@@ -249,8 +249,8 @@ export const services: Service[] = [
 ];
 
 export const contacts = {
-  phoneDisplay: "+7 (985) 000-32-28",
-  phone: "+79850003228",
+  phoneDisplay: "+7 (939) 845-63-95",
+  phone: "+79398456395",
   email: "rinf@bk.ru",
   telegram: process.env.NEXT_PUBLIC_TELEGRAM_URL || "https://t.me/",
   location: "Москва, м. Академическая",
