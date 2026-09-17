@@ -51,7 +51,7 @@ export default function Home() {
 
       <section className="hero">
         <div className="hero-copy reveal">
-          <p className="eyebrow">Юрист по гражданским делам · Москва и онлайн</p>
+          <p className="eyebrow">Юрист по гражданским делам · {contacts.workFormat}</p>
           <h1>Юридическая стратегия для сложных жизненных и имущественных вопросов</h1>
           <p className="hero-lead">
             Гражданско-правовая практика и глубокое знание судебной системы —
@@ -74,14 +74,14 @@ export default function Home() {
         <div className="trust-strip">
           <div><span className="trust-icon">§</span><b>Гражданско-правовая<br />специализация</b></div>
           <div><span className="trust-icon">◇</span><b>Опыт внутри<br />судебной системы</b></div>
-          <div><span className="trust-icon">⌖</span><b>Москва · онлайн<br />по России</b></div>
+          <div><span className="trust-icon">⌖</span><b>{contacts.workFormat}</b></div>
         </div>
       </section>
 
       <section className="section section--services" id="services">
         <div className="section-heading">
           <div>
-            <p className="eyebrow">Пять направлений практики</p>
+            <p className="eyebrow">Четыре направления практики</p>
             <h2>Помощь там, где цена ошибки особенно высока</h2>
           </div>
           <p>

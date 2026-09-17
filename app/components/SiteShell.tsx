@@ -19,7 +19,7 @@ export function SiteShell({ children }: { children: React.ReactNode }) {
       <a className="skip-link" href="#content">К содержанию</a>
       <header className="site-header">
         <a className="brand" href="/" aria-label="Евгения Бычихина — главная">
-          <span>Евгения</span> Бычихина
+          Евгения Бычихина
         </a>
         <button
           className="menu-toggle"
@@ -42,6 +42,12 @@ export function SiteShell({ children }: { children: React.ReactNode }) {
             Разобрать мою ситуацию
           </button>
         </nav>
+        <div className="header-contacts" aria-label="Контакты">
+          <a href={`tel:${contacts.phone}`}>{contacts.phoneDisplay}</a>
+          <a href={`mailto:${contacts.email}`}>{contacts.email}</a>
+          <a href={contacts.telegram} target="_blank" rel="noreferrer">Telegram</a>
+          <a href={contacts.max} target="_blank" rel="noreferrer">MAX</a>
+        </div>
       </header>
 
       <main id="content">{children}</main>
@@ -49,8 +55,8 @@ export function SiteShell({ children }: { children: React.ReactNode }) {
       <footer className="site-footer">
         <div className="footer-top">
           <div>
-            <a className="brand brand--footer" href="/"><span>Евгения</span> Бычихина</a>
-            <p>Гражданско-правовая практика в Москве и онлайн по России.</p>
+            <a className="brand brand--footer" href="/">Евгения Бычихина</a>
+            <p>Гражданско-правовая практика: {contacts.workFormat}.</p>
           </div>
           <div>
             <b>Услуги</b>
@@ -63,6 +69,7 @@ export function SiteShell({ children }: { children: React.ReactNode }) {
             <a href={`tel:${contacts.phone}`}>{contacts.phoneDisplay}</a>
             <a href={`mailto:${contacts.email}`}>{contacts.email}</a>
             <a href={contacts.telegram} target="_blank" rel="noreferrer">Telegram</a>
+            <a href={contacts.max} target="_blank" rel="noreferrer">MAX</a>
             <span>{contacts.location}</span>
           </div>
         </div>
@@ -78,6 +85,7 @@ export function SiteShell({ children }: { children: React.ReactNode }) {
 
       <div className="messengers" aria-label="Быстрая связь">
         <a className="messenger messenger--telegram" href={contacts.telegram} target="_blank" rel="noreferrer" aria-label="Написать в Telegram">T</a>
+        <a className="messenger messenger--max" href={contacts.max} target="_blank" rel="noreferrer" aria-label="Написать в MAX">M</a>
         <a className="messenger messenger--phone" href={`tel:${contacts.phone}`} aria-label="Позвонить">☎</a>
       </div>
 

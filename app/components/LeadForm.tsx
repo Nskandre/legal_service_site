@@ -43,12 +43,12 @@ export function LeadForm({ service = "Первичная консультаци�
           <input name="name" autoComplete="name" required placeholder="Как к вам обращаться" />
         </label>
         <label>
-          <span>Телефон или Telegram</span>
+          <span>Телефон, email или мессенджер</span>
           <input
             name="contact"
             autoComplete="tel"
             required
-            placeholder="+7 900 000-00-00"
+            placeholder="Телефон, email, Telegram или MAX"
           />
         </label>
       </div>

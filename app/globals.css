@@ -138,18 +138,24 @@ h3 {
   position: sticky;
   top: 0;
   z-index: 80;
-  display: flex;
+  display: grid;
+  grid-template-areas:
+    "brand nav"
+    "contacts contacts";
+  grid-template-columns: auto 1fr;
   align-items: center;
-  justify-content: space-between;
-  min-height: 96px;
-  padding: 18px clamp(22px, 4vw, 64px);
+  gap: 12px 32px;
+  min-height: 118px;
+  padding: 14px clamp(22px, 4vw, 64px) 12px;
   border-bottom: 1px solid rgba(212, 200, 187, 0.82);
   background: rgba(245, 241, 234, 0.92);
   backdrop-filter: blur(18px);
 }
 
 .brand {
+  grid-area: brand;
   flex: none;
+  color: var(--burgundy);
   font-family: var(--serif);
   font-size: clamp(1.55rem, 2.3vw, 2.35rem);
   font-weight: 500;
@@ -157,16 +163,36 @@ h3 {
   line-height: 1;
 }
 
-.brand span {
-  color: var(--burgundy);
-}
-
 .site-nav {
+  grid-area: nav;
   display: flex;
   align-items: center;
+  justify-self: end;
   gap: clamp(20px, 2.6vw, 42px);
   font-size: 0.95rem;
   font-weight: 500;
+}
+
+.header-contacts {
+  grid-area: contacts;
+  display: flex;
+  justify-content: flex-end;
+  gap: clamp(16px, 2.2vw, 34px);
+  padding-top: 9px;
+  border-top: 1px solid rgba(212, 200, 187, 0.62);
+  color: var(--taupe);
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.035em;
+}
+
+.header-contacts a {
+  transition: color 160ms ease;
+}
+
+.header-contacts a:hover,
+.header-contacts a:focus-visible {
+  color: var(--burgundy);
 }
 
 .site-nav > a {
@@ -425,6 +451,7 @@ textarea:focus-visible {
 .service-card {
   position: relative;
   display: flex;
+  grid-column: span 3;
   flex-direction: column;
   min-height: 360px;
   padding: 32px;
@@ -435,14 +462,6 @@ textarea:focus-visible {
     transform 220ms ease,
     background-color 220ms ease,
     box-shadow 220ms ease;
-}
-
-.service-card:nth-child(-n + 3) {
-  grid-column: span 2;
-}
-
-.service-card:nth-child(n + 4) {
-  grid-column: span 3;
 }
 
 .service-card:hover {
@@ -1091,6 +1110,10 @@ textarea:focus-visible {
   background: #327da7;
 }
 
+.messenger--max {
+  background: var(--ink);
+}
+
 .messenger--phone {
   background: var(--burgundy);
 }
@@ -1168,6 +1191,14 @@ textarea:focus-visible {
 }
 
 @media (max-width: 1180px) {
+  .site-header {
+    column-gap: 20px;
+  }
+
+  .brand {
+    font-size: clamp(1.45rem, 2vw, 1.9rem);
+  }
+
   .site-nav {
     gap: 18px;
   }
@@ -1195,14 +1226,33 @@ textarea:focus-visible {
 
 @media (max-width: 920px) {
   html {
-    scroll-padding-top: 82px;
+    scroll-padding-top: 140px;
   }
 
   .site-header {
-    min-height: 82px;
+    grid-template-areas:
+      "brand toggle"
+      "contacts contacts";
+    grid-template-columns: 1fr auto;
+    min-height: 140px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+  }
+
+  .header-contacts {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    display: grid;
+    justify-content: stretch;
+    gap: 5px 18px;
+    font-size: 0.74rem;
+  }
+
+  .header-contacts a:nth-child(even) {
+    text-align: right;
   }
 
   .menu-toggle {
+    grid-area: toggle;
     display: grid;
     width: 48px;
     height: 48px;
@@ -1221,7 +1271,7 @@ textarea:focus-visible {
 
   .site-nav {
     position: absolute;
-    top: 82px;
+    top: 140px;
     left: 0;
     right: 0;
     display: none;
@@ -1329,7 +1379,7 @@ textarea:focus-visible {
   }
 
   .brand {
-    font-size: 1.65rem;
+    font-size: 1.55rem;
   }
 
   .hero {
