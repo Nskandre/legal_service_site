@@ -206,8 +206,9 @@ export const contacts = {
   phoneDisplay: "+7 (939) 845-63-95",
   phone: "+79398456395",
   email: "rinf@bk.ru",
-  telegram: process.env.NEXT_PUBLIC_TELEGRAM_URL || "https://t.me/",
-  max: process.env.NEXT_PUBLIC_MAX_URL || "https://max.ru/",
+  telegram:
+    process.env.NEXT_PUBLIC_TELEGRAM_URL || "https://t.me/+79398456395",
+  max: process.env.NEXT_PUBLIC_MAX_URL || "https://web.max.ru/",
   location: "Москва, метро Академическая",
   workFormat: "Москва, метро Академическая * онлайн по России",
 };

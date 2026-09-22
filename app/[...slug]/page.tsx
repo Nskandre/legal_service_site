@@ -288,8 +288,8 @@ function ContactsPage() {
         <div className="contact-cards">
           <a href={`tel:${contacts.phone}`}><span>Телефон</span><b>{contacts.phoneDisplay}</b></a>
           <a href={`mailto:${contacts.email}`}><span>Электронная почта</span><b>{contacts.email}</b></a>
-          <a href={contacts.telegram} target="_blank" rel="noreferrer"><span>Telegram</span><b>Написать в Telegram ↗</b></a>
           <a href={contacts.max} target="_blank" rel="noreferrer"><span>MAX</span><b>Написать в MAX ↗</b></a>
+          <a href={contacts.telegram} target="_blank" rel="noreferrer"><span>Telegram</span><b>Написать в Telegram ↗</b></a>
           <div><span>Формат работы</span><b>{contacts.workFormat}</b></div>
         </div>
         <div className="paper-card">

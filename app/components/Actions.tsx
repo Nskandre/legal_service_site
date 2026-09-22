@@ -1,10 +1,22 @@
 "use client";
 
-export function OpenLeadButton({ label = "Разобрать мою ситуацию", className = "" }) {
+export function OpenLeadButton({
+  label = "Разобрать мою ситуацию",
+  className = "",
+  service = "Первичная консультация",
+}: {
+  label?: string;
+  className?: string;
+  service?: string;
+}) {
   return (
     <button
       className={`button button--primary ${className}`}
-      onClick={() => window.dispatchEvent(new Event("open-lead-dialog"))}
+      onClick={() =>
+        window.dispatchEvent(
+          new CustomEvent("open-lead-dialog", { detail: { service } }),
+        )
+      }
     >
       {label}
     </button>
@@ -25,5 +37,5 @@ export function OrderButton({ service }: { service: string }) {
       </a>
     );
   }
-  return <OpenLeadButton label="Заказать онлайн" />;
+  return <OpenLeadButton label="Заказать онлайн" service={service} />;
 }

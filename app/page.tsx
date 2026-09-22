@@ -59,6 +59,11 @@ export default function Home() {
           </p>
           <div className="hero-actions">
             <OpenLeadButton />
+            <OpenLeadButton
+              label="Записаться на очную консультацию"
+              service="Очная консультация"
+              className="button--outline"
+            />
             <a className="button button--outline" href="#services">Услуги и стоимость</a>
           </div>
         </div>
@@ -69,6 +74,8 @@ export default function Home() {
             width="1122"
             height="1402"
             fetchPriority="high"
+            loading="eager"
+            decoding="async"
           />
         </div>
         <div className="trust-strip">

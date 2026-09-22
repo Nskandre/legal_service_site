@@ -46,6 +46,12 @@ test("renders consistent services, work format and communication channels", asyn
   assert.match(home, /Москва, метро Академическая \* онлайн по России/);
   assert.match(home, />Telegram</);
   assert.match(home, />MAX</);
+  assert.match(home, /Записаться на очную консультацию/);
+  assert.match(
+    home,
+    /Информация на страницах сайта не является индивидуальной юридической консультацией и не содержит гарантии результата по делу\./,
+  );
+  assert.match(home, /https:\/\/t\.me\/\+79398456395/);
   assert.doesNotMatch(home, /ООО|НКО|ooo-nko/);
 
   const contactsResponse = await render("/kontakty");
@@ -57,6 +63,9 @@ test("renders consistent services, work format and communication channels", asyn
   assert.match(contacts, /Написать в Telegram/);
   assert.match(contacts, /Написать в MAX/);
   assert.match(contacts, /Москва, метро Академическая \* онлайн по России/);
+  assert.ok(
+    contacts.indexOf("Написать в MAX") < contacts.indexOf("Написать в Telegram"),
+  );
 
   const removedService = await render("/uslugi/ooo-nko");
   assert.equal(removedService.status, 404);

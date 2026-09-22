@@ -7,9 +7,15 @@ import { LeadForm } from "./LeadForm";
 export function SiteShell({ children }: { children: React.ReactNode }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [dialogService, setDialogService] = useState("Первичная консультация");
+  const [phoneOpen, setPhoneOpen] = useState(false);
 
   useEffect(() => {
-    const open = () => setDialogOpen(true);
+    const open = (event: Event) => {
+      const detail = (event as CustomEvent<{ service?: string }>).detail;
+      setDialogService(detail?.service || "Первичная консультация");
+      setDialogOpen(true);
+    };
     window.addEventListener("open-lead-dialog", open);
     return () => window.removeEventListener("open-lead-dialog", open);
   }, []);
@@ -38,15 +44,21 @@ export function SiteShell({ children }: { children: React.ReactNode }) {
               {item.label}
             </a>
           ))}
-          <button className="button button--small button--primary" onClick={() => setDialogOpen(true)}>
+          <button
+            className="button button--small button--primary"
+            onClick={() => {
+              setDialogService("Первичная консультация");
+              setDialogOpen(true);
+            }}
+          >
             Разобрать мою ситуацию
           </button>
         </nav>
         <div className="header-contacts" aria-label="Контакты">
           <a href={`tel:${contacts.phone}`}>{contacts.phoneDisplay}</a>
           <a href={`mailto:${contacts.email}`}>{contacts.email}</a>
-          <a href={contacts.telegram} target="_blank" rel="noreferrer">Telegram</a>
           <a href={contacts.max} target="_blank" rel="noreferrer">MAX</a>
+          <a href={contacts.telegram} target="_blank" rel="noreferrer">Telegram</a>
         </div>
       </header>
 
@@ -68,8 +80,8 @@ export function SiteShell({ children }: { children: React.ReactNode }) {
             <b>Связаться</b>
             <a href={`tel:${contacts.phone}`}>{contacts.phoneDisplay}</a>
             <a href={`mailto:${contacts.email}`}>{contacts.email}</a>
-            <a href={contacts.telegram} target="_blank" rel="noreferrer">Telegram</a>
             <a href={contacts.max} target="_blank" rel="noreferrer">MAX</a>
+            <a href={contacts.telegram} target="_blank" rel="noreferrer">Telegram</a>
             <span>{contacts.location}</span>
           </div>
         </div>
@@ -79,14 +91,31 @@ export function SiteShell({ children }: { children: React.ReactNode }) {
             <a href="/politika">Конфиденциальность</a>
             <a href="/soglasie">Согласие на обработку данных</a>
           </div>
-          <span>Информация на сайте не является гарантией результата.</span>
+          <span>
+            Информация на страницах сайта не является индивидуальной юридической
+            консультацией и не содержит гарантии результата по делу.
+          </span>
         </div>
       </footer>
 
       <div className="messengers" aria-label="Быстрая связь">
-        <a className="messenger messenger--telegram" href={contacts.telegram} target="_blank" rel="noreferrer" aria-label="Написать в Telegram">T</a>
+        {phoneOpen && (
+          <div className="phone-popover" role="status">
+            <span>Телефон</span>
+            <a href={`tel:${contacts.phone}`}>{contacts.phoneDisplay}</a>
+          </div>
+        )}
+        <button
+          className="messenger messenger--phone"
+          type="button"
+          aria-label="Показать номер телефона"
+          aria-expanded={phoneOpen}
+          onClick={() => setPhoneOpen(!phoneOpen)}
+        >
+          ☎
+        </button>
         <a className="messenger messenger--max" href={contacts.max} target="_blank" rel="noreferrer" aria-label="Написать в MAX">M</a>
-        <a className="messenger messenger--phone" href={`tel:${contacts.phone}`} aria-label="Позвонить">☎</a>
+        <a className="messenger messenger--telegram" href={contacts.telegram} target="_blank" rel="noreferrer" aria-label="Написать в Telegram">T</a>
       </div>
 
       {dialogOpen && (
@@ -102,7 +131,7 @@ export function SiteShell({ children }: { children: React.ReactNode }) {
             <p className="eyebrow">Первичный разбор</p>
             <h2 id="lead-title">Расскажите, что произошло</h2>
             <p>Я уточню задачу, назову возможный формат работы и стоимость следующего шага.</p>
-            <LeadForm />
+            <LeadForm service={dialogService} />
           </section>
         </div>
       )}
