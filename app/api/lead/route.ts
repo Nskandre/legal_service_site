@@ -11,14 +11,6 @@ function clean(value: unknown, max = 2000) {
   return String(value || "").trim().slice(0, max);
 }
 
-function escapeHtml(value: string) {
-  return value
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;");
-}
-
 export async function POST(request: Request) {
   let body: Lead;
   try {
@@ -64,39 +56,6 @@ export async function POST(request: Request) {
         }),
       }),
     );
-  }
-
-  if (
-    process.env.RESEND_API_KEY &&
-    process.env.LEAD_EMAIL_TO &&
-    process.env.LEAD_EMAIL_FROM
-  ) {
-    deliveries.push(
-      fetch("https://api.resend.com/emails", {
-        method: "POST",
-        headers: {
-          authorization: `Bearer ${process.env.RESEND_API_KEY}`,
-          "content-type": "application/json",
-        },
-        body: JSON.stringify({
-          from: process.env.LEAD_EMAIL_FROM,
-          to: [process.env.LEAD_EMAIL_TO],
-          subject: `Заявка: ${service}`,
-          text,
-          html: `<h2>Новая заявка с сайта</h2><p><b>Услуга:</b> ${escapeHtml(service)}</p><p><b>Имя:</b> ${escapeHtml(name)}</p><p><b>Контакт:</b> ${escapeHtml(contact)}</p><p><b>Сообщение:</b><br>${escapeHtml(message).replaceAll("\n", "<br>")}</p>`,
-        }),
-      }),
-    );
-  }
-
-  if (process.env.SMSRU_API_ID && process.env.LEAD_SMS_TO) {
-    const sms = new URLSearchParams({
-      api_id: process.env.SMSRU_API_ID,
-      to: process.env.LEAD_SMS_TO,
-      msg: text.slice(0, 700),
-      json: "1",
-    });
-    deliveries.push(fetch(`https://sms.ru/sms/send?${sms.toString()}`));
   }
 
   if (process.env.LEAD_WEBHOOK_URL) {

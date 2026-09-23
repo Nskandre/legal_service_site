@@ -185,13 +185,49 @@ h3 {
   letter-spacing: 0.035em;
 }
 
-.header-contacts a {
+.header-contacts a,
+.header-contacts button {
+  padding: 0;
+  color: inherit;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
   transition: color 160ms ease;
 }
 
 .header-contacts a:hover,
-.header-contacts a:focus-visible {
+.header-contacts a:focus-visible,
+.header-contacts button:hover,
+.header-contacts button:focus-visible {
   color: var(--burgundy);
+}
+
+.header-contact-popover {
+  position: absolute;
+  right: clamp(22px, 4vw, 64px);
+  bottom: -82px;
+  display: grid;
+  gap: 2px;
+  min-width: min(380px, calc(100vw - 44px));
+  padding: 15px 20px;
+  border: 1px solid var(--hairline);
+  border-radius: 14px;
+  background: var(--paper);
+  box-shadow: var(--shadow);
+}
+
+.header-contact-popover span {
+  color: var(--taupe);
+  font-size: 0.78rem;
+}
+
+.header-contact-popover b {
+  color: var(--burgundy);
+  font-family: var(--serif);
+  font-size: clamp(1.45rem, 3vw, 2rem);
+  font-weight: 500;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
 }
 
 .site-nav > a {
@@ -340,6 +376,9 @@ textarea:focus-visible {
   grid-area: art;
   align-self: stretch;
   min-height: 560px;
+  border-radius: var(--radius);
+  background: #ded0c0 url("/hero-paper.png") center / cover no-repeat;
+  box-shadow: var(--shadow);
 }
 
 .hero-art::before,
@@ -373,7 +412,7 @@ textarea:focus-visible {
   object-fit: cover;
   object-position: center;
   border-radius: var(--radius);
-  box-shadow: var(--shadow);
+  box-shadow: none;
 }
 
 .trust-strip {
@@ -1036,6 +1075,7 @@ textarea:focus-visible {
 .brand--footer {
   display: inline-block;
   margin-bottom: 20px;
+  color: #fffdfc;
 }
 
 .footer-top > div {
@@ -1086,7 +1126,7 @@ textarea:focus-visible {
 .messengers {
   position: fixed;
   right: 20px;
-  bottom: 20px;
+  bottom: max(96px, calc(24px + env(safe-area-inset-bottom)));
   z-index: 65;
   display: grid;
   gap: 10px;
@@ -1179,6 +1219,323 @@ textarea:focus-visible {
 
 .lead-dialog > p:not(.eyebrow) {
   color: var(--taupe);
+}
+
+.booking-dialog {
+  width: min(820px, 100%);
+}
+
+.booking-empty {
+  padding: 24px;
+  border: 1px solid var(--hairline);
+  border-radius: 18px;
+  background: var(--paper);
+}
+
+.booking-empty p {
+  margin-bottom: 20px;
+  font-size: 1.05rem;
+}
+
+.booking-contacts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 18px;
+  color: var(--burgundy);
+  font-weight: 600;
+}
+
+.booking-form {
+  display: grid;
+  gap: 26px;
+  margin-top: 28px;
+}
+
+.booking-form fieldset {
+  padding: 0;
+  border: 0;
+}
+
+.booking-form legend {
+  margin-bottom: 12px;
+  font-weight: 700;
+}
+
+.calendar-heading {
+  display: grid;
+  grid-template-columns: 42px 1fr 42px;
+  align-items: center;
+  margin-bottom: 10px;
+  text-align: center;
+  text-transform: capitalize;
+}
+
+.calendar-heading button,
+.calendar-grid button,
+.time-options button {
+  min-height: 42px;
+  color: var(--ink);
+  border: 1px solid var(--hairline);
+  border-radius: 10px;
+  background: var(--paper);
+  cursor: pointer;
+}
+
+.calendar-weekdays,
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+}
+
+.calendar-weekdays span {
+  padding: 5px;
+  color: var(--taupe);
+  font-size: 0.76rem;
+  text-align: center;
+}
+
+.calendar-grid button:disabled {
+  cursor: default;
+  opacity: 0.38;
+}
+
+.calendar-grid button.is-outside {
+  opacity: 0.2;
+}
+
+.calendar-grid button.is-available,
+.time-options button {
+  border-color: #598266;
+  background: #e8f1e8;
+  opacity: 1;
+}
+
+.calendar-grid button.is-selected,
+.time-options button.is-selected {
+  color: var(--white);
+  border-color: var(--burgundy);
+  background: var(--burgundy);
+}
+
+.calendar-legend {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 10px 0 0;
+  color: var(--taupe);
+  font-size: 0.82rem;
+}
+
+.calendar-legend i {
+  width: 12px;
+  height: 12px;
+  border: 1px solid #598266;
+  border-radius: 3px;
+  background: #e8f1e8;
+}
+
+.time-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px;
+}
+
+.time-options button {
+  min-width: 76px;
+  padding: 8px 14px;
+}
+
+.method-options {
+  display: grid;
+  gap: 8px;
+}
+
+.method-options label {
+  display: flex;
+  gap: 9px;
+  align-items: center;
+  padding: 12px 14px;
+  border: 1px solid var(--hairline);
+  border-radius: 10px;
+  background: var(--paper);
+}
+
+.admin-shell {
+  min-height: 100vh;
+  padding: clamp(28px, 5vw, 72px) clamp(18px, 5vw, 72px) 110px;
+}
+
+.admin-shell--login {
+  display: grid;
+  place-items: center;
+}
+
+.admin-heading {
+  display: flex;
+  max-width: 1180px;
+  margin: 0 auto 34px;
+  justify-content: space-between;
+  gap: 24px;
+  align-items: end;
+}
+
+.admin-heading h1 {
+  margin-bottom: 12px;
+  font-size: clamp(2.7rem, 5vw, 4.8rem);
+}
+
+.admin-heading p {
+  margin-bottom: 0;
+  color: var(--taupe);
+}
+
+.admin-heading-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.button--quiet {
+  color: var(--taupe);
+  border: 1px solid var(--hairline);
+  background: transparent;
+}
+
+.admin-form {
+  display: grid;
+  max-width: 1180px;
+  margin: 0 auto;
+  gap: 22px;
+}
+
+.admin-card {
+  width: 100%;
+  max-width: 1180px;
+  padding: clamp(24px, 4vw, 42px);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius);
+  background: var(--paper);
+  box-shadow: var(--shadow);
+}
+
+.admin-shell--login .admin-card {
+  max-width: 560px;
+}
+
+.admin-card h2 {
+  font-size: clamp(2rem, 3vw, 3rem);
+}
+
+.admin-card h3 {
+  margin-top: 30px;
+}
+
+.admin-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.admin-card label,
+.admin-login label {
+  display: grid;
+  gap: 7px;
+}
+
+.admin-card label > span,
+.admin-login label > span {
+  color: var(--taupe);
+  font-size: 0.84rem;
+  font-weight: 600;
+}
+
+.admin-card input,
+.admin-login input {
+  width: 100%;
+  min-height: 48px;
+  padding: 10px 13px;
+  color: var(--ink);
+  border: 1px solid var(--hairline);
+  border-radius: 9px;
+  background: #fff;
+}
+
+.admin-wide {
+  grid-column: 1 / -1;
+}
+
+.admin-short {
+  max-width: 320px;
+}
+
+.admin-price-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px 20px;
+}
+
+.admin-slot-add {
+  display: grid;
+  grid-template-columns: 1fr 1fr auto;
+  gap: 14px;
+  align-items: end;
+}
+
+.admin-slots {
+  display: grid;
+  gap: 8px;
+  margin-top: 20px;
+}
+
+.admin-slots > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 12px 14px;
+  border: 1px solid var(--hairline);
+  border-radius: 9px;
+}
+
+.admin-slots button {
+  color: var(--burgundy);
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.admin-empty {
+  margin: 18px 0 0;
+  color: var(--taupe);
+}
+
+.admin-login {
+  display: grid;
+  gap: 16px;
+  margin: 24px 0;
+}
+
+.admin-savebar {
+  position: sticky;
+  bottom: 18px;
+  z-index: 20;
+  display: flex;
+  gap: 18px;
+  align-items: center;
+  padding: 14px;
+  border: 1px solid var(--hairline);
+  border-radius: 16px;
+  background: rgba(255, 253, 249, 0.94);
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(14px);
+}
+
+.admin-message {
+  margin: 0;
+  color: #366144;
+}
+
+.admin-message--error {
+  color: #9c2f35;
 }
 
 .dialog-close {
@@ -1287,6 +1644,10 @@ textarea:focus-visible {
   }
 
   .header-contacts a:nth-child(even) {
+    text-align: right;
+  }
+
+  .header-contacts button:nth-child(even) {
     text-align: right;
   }
 
@@ -1514,7 +1875,11 @@ textarea:focus-visible {
 
   .messengers {
     right: 14px;
-    bottom: 14px;
+    bottom: max(86px, calc(18px + env(safe-area-inset-bottom)));
+  }
+
+  .footer-bottom > span:last-child {
+    max-width: calc(100% - 72px);
   }
 
   .messenger {
@@ -1530,6 +1895,23 @@ textarea:focus-visible {
   .dialog-backdrop {
     padding: 0;
     align-items: end;
+  }
+
+  .admin-heading,
+  .admin-heading-actions,
+  .admin-savebar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .admin-grid,
+  .admin-price-list,
+  .admin-slot-add {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-wide {
+    grid-column: auto;
   }
 
   .lead-dialog {

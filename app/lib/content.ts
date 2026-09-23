@@ -208,10 +208,20 @@ export const contacts = {
   email: "rinf@bk.ru",
   telegram:
     process.env.NEXT_PUBLIC_TELEGRAM_URL || "https://t.me/+79398456395",
-  max: process.env.NEXT_PUBLIC_MAX_URL || "https://web.max.ru/",
+  max:
+    process.env.NEXT_PUBLIC_MAX_URL ||
+    "https://max.ru/u/f9LHodD0cOKbM7gLACi6hYkE4Ek_ToWMXdD2zBHwJ1i_t9Av_nHZjSa2hZ8",
   location: "Москва, метро Академическая",
   workFormat: "Москва, метро Академическая * онлайн по России",
 };
+
+export const pricingItems = [
+  { id: "consultation", title: "Первичная консультация", text: "Разбор ситуации, документов и возможных действий", price: "от 5 000 ₽" },
+  { id: "strategy", title: "Правовой анализ и стратегия", text: "Письменная оценка перспектив, рисков и доказательств", price: "от 15 000 ₽" },
+  { id: "document", title: "Подготовка документа", text: "Претензия, иск, отзыв, договор или соглашение", price: "от 8 000 ₽" },
+  { id: "transaction", title: "Сопровождение сделки", text: "Проверка, договор, переговоры и регистрационные действия", price: "от 20 000 ₽" },
+  { id: "court", title: "Ведение судебного дела", text: "Стратегия, документы и участие в заседаниях", price: "по смете" },
+];
 
 export const nav = [
   { href: "/#services", label: "Услуги" },

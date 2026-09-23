@@ -1,14 +1,18 @@
 "use client";
 
 import { FormEvent, useState } from "react";
+import Link from "next/link";
 import { contacts } from "../lib/content";
+import type { SiteConfig } from "../lib/site-config";
 
 type LeadFormProps = {
   service?: string;
   compact?: boolean;
+  submitLabel?: string;
+  contactDetails?: SiteConfig["contacts"];
 };
 
-export function LeadForm({ service = "Первичная консультация", compact }: LeadFormProps) {
+export function LeadForm({ service = "Первичная консультация", compact, submitLabel = "Получить разбор ситуации", contactDetails = contacts }: LeadFormProps) {
   const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
 
   async function submit(event: FormEvent<HTMLFormElement>) {
@@ -67,11 +71,11 @@ export function LeadForm({ service = "Первичная консультаци�
         <input type="checkbox" name="consent" value="yes" required />
         <span>
           Согласен(на) на обработку персональных данных согласно{" "}
-          <a href="/politika">политике конфиденциальности</a>
+          <Link href="/politika">политике конфиденциальности</Link>
         </span>
       </label>
       <button className="button button--primary" type="submit" disabled={status === "sending"}>
-        {status === "sending" ? "Отправляем…" : "Получить разбор ситуации"}
+        {status === "sending" ? "Отправляем…" : submitLabel}
       </button>
       <p className="form-note" aria-live="polite">
         {status === "sent" &&
@@ -79,8 +83,8 @@ export function LeadForm({ service = "Первичная консультаци�
         {status === "error" && (
           <>
             Не удалось отправить форму. Напишите на{" "}
-            <a href={`mailto:${contacts.email}`}>{contacts.email}</a> или позвоните{" "}
-            <a href={`tel:${contacts.phone}`}>{contacts.phoneDisplay}</a>.
+            <a href={`mailto:${contactDetails.email}`}>{contactDetails.email}</a> или позвоните{" "}
+            <a href={`tel:${contactDetails.phone}`}>{contactDetails.phoneDisplay}</a>.
           </>
         )}
         {status === "idle" && "Ответ — в ближайшее рабочее время. Без навязчивых звонков."}

@@ -1,9 +1,13 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { OpenLeadButton, OrderButton } from "../components/Actions";
 import { LeadForm } from "../components/LeadForm";
 import { SiteShell } from "../components/SiteShell";
-import { contacts, services, siteUrl } from "../lib/content";
+import { services, siteUrl } from "../lib/content";
+import { configuredPricing, configuredServices, getSiteConfig, type SiteConfig } from "../lib/site-config";
+
+export const dynamic = "force-dynamic";
 
 type Props = { params: Promise<{ slug: string[] }> };
 
@@ -61,26 +65,28 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function ContentPage({ params }: Props) {
   const { slug } = await params;
+  const config = await getSiteConfig();
+  const pageServices = configuredServices(config);
   const path = pathFrom(slug);
-  const service = getService(slug);
-  if (service) return <ServicePage service={service} />;
-  if (path === "/ob-avtore") return <AboutPage />;
-  if (path === "/stoimost") return <PricingPage />;
-  if (path === "/kontakty") return <ContactsPage />;
-  if (path === "/politika") return <PolicyPage consent={false} />;
-  if (path === "/soglasie") return <PolicyPage consent />;
+  const service = slug[0] === "uslugi" && slug.length === 2 ? pageServices.find((item) => item.slug === slug[1]) : undefined;
+  if (service) return <ServicePage service={service} config={config} />;
+  if (path === "/ob-avtore") return <AboutPage config={config} />;
+  if (path === "/stoimost") return <PricingPage config={config} />;
+  if (path === "/kontakty") return <ContactsPage config={config} />;
+  if (path === "/politika") return <PolicyPage consent={false} config={config} />;
+  if (path === "/soglasie") return <PolicyPage consent config={config} />;
   notFound();
 }
 
 function Breadcrumbs({ current }: { current: string }) {
   return (
     <nav className="breadcrumbs" aria-label="Хлебные крошки">
-      <a href="/">Главная</a><span>→</span><span>{current}</span>
+      <Link href="/">Главная</Link><span>→</span><span>{current}</span>
     </nav>
   );
 }
 
-function ServicePage({ service }: { service: (typeof services)[number] }) {
+function ServicePage({ service, config }: { service: (typeof services)[number]; config: SiteConfig }) {
   const schema = {
     "@context": "https://schema.org",
     "@graph": [
@@ -116,7 +122,7 @@ function ServicePage({ service }: { service: (typeof services)[number] }) {
   };
 
   return (
-    <SiteShell>
+    <SiteShell config={config}>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }} />
       <section className="inner-hero">
         <Breadcrumbs current={service.short} />
@@ -133,7 +139,7 @@ function ServicePage({ service }: { service: (typeof services)[number] }) {
           <aside className="service-summary">
             <span>Стоимость</span><b>{service.price}</b>
             <span>Срок ответа</span><b>{service.timeline}</b>
-            <small>Точная стоимость определяется после изучения задачи.</small>
+            <small>Точная стоимость определяется после изучения ситуации.</small>
           </aside>
         </div>
       </section>
@@ -185,15 +191,15 @@ function ServicePage({ service }: { service: (typeof services)[number] }) {
 
       <section className="section consultation">
         <div><p className="eyebrow">Следующий шаг</p><h2>Получите первичную оценку ситуации</h2><p>Оставьте контакты и коротко опишите задачу. Ответ — в ближайшее рабочее время.</p></div>
-        <LeadForm service={service.title} />
+        <LeadForm service={service.title} contactDetails={config.contacts} />
       </section>
     </SiteShell>
   );
 }
 
-function AboutPage() {
+function AboutPage({ config }: { config: SiteConfig }) {
   return (
-    <SiteShell>
+    <SiteShell config={config}>
       <section className="inner-hero inner-hero--short">
         <Breadcrumbs current="Обо мне" />
         <p className="eyebrow">Евгения Геннадьевна Бычихина</p>
@@ -214,8 +220,7 @@ function AboutPage() {
           <h2>Частная практика, адвокатская коллегия и судебная система</h2>
           <p>
             Профессиональный опыт включает частную юридическую практику, работу
-            помощником адвоката, секретарем судебного заседания, заведующей
-            канцелярией и заместителем начальника общего отдела районного суда.
+            в судебной системе (районный суд, мировой суд) и адвокатуре.
           </p>
           <p>
             Этот путь сформировал практический взгляд на доказательства,
@@ -233,22 +238,16 @@ function AboutPage() {
       </section>
       <section className="section consultation">
         <div><p className="eyebrow">Знакомство</p><h2>Обсудим вашу задачу</h2><p>Начнем с короткого описания ситуации и списка имеющихся документов.</p></div>
-        <LeadForm compact />
+        <LeadForm contactDetails={config.contacts} />
       </section>
     </SiteShell>
   );
 }
 
-function PricingPage() {
-  const items = [
-    ["Первичная консультация", "Разбор ситуации, документов и возможных действий", "от 5 000 ₽"],
-    ["Правовой анализ и стратегия", "Письменная оценка перспектив, рисков и доказательств", "от 15 000 ₽"],
-    ["Подготовка документа", "Претензия, иск, отзыв, договор или соглашение", "от 8 000 ₽"],
-    ["Сопровождение сделки", "Проверка, договор, переговоры и регистрационные действия", "от 20 000 ₽"],
-    ["Ведение судебного дела", "Стратегия, документы и участие в заседаниях", "по смете"],
-  ];
+function PricingPage({ config }: { config: SiteConfig }) {
+  const items = configuredPricing(config);
   return (
-    <SiteShell>
+    <SiteShell config={config}>
       <section className="inner-hero inner-hero--short">
         <Breadcrumbs current="Стоимость" />
         <p className="eyebrow">Прозрачный бюджет</p>
@@ -259,8 +258,8 @@ function PricingPage() {
         </p>
       </section>
       <section className="section pricing-list">
-        {items.map(([title, text, price]) => (
-          <article key={title}>
+        {items.map(({ id, title, text, price }) => (
+          <article key={id}>
             <div><h3>{title}</h3><p>{text}</p></div>
             <b>{price}</b>
             <OrderButton service={title} />
@@ -269,15 +268,16 @@ function PricingPage() {
       </section>
       <section className="section pricing-note">
         <div><h2>Можно оплачивать работу по этапам</h2><p>Для объемных дел стоимость делится на согласованные этапы: анализ, подготовка позиции, подача документов, заседания и исполнение.</p></div>
-        <a className="button button--outline" href="/kontakty">Задать вопрос о стоимости</a>
+        <OpenLeadButton className="button--outline" label="Задать вопрос о стоимости" service="Вопрос о стоимости" submitLabel="Отправить вопрос" />
       </section>
     </SiteShell>
   );
 }
 
-function ContactsPage() {
+function ContactsPage({ config }: { config: SiteConfig }) {
+  const { contacts } = config;
   return (
-    <SiteShell>
+    <SiteShell config={config}>
       <section className="inner-hero inner-hero--short">
         <Breadcrumbs current="Контакты" />
         <p className="eyebrow">Связаться</p>
@@ -295,19 +295,20 @@ function ContactsPage() {
         <div className="paper-card">
           <p className="eyebrow">Заявка</p>
           <h2>Опишите ваш вопрос</h2>
-          <LeadForm />
+          <LeadForm contactDetails={contacts} />
         </div>
       </section>
     </SiteShell>
   );
 }
 
-function PolicyPage({ consent }: { consent: boolean }) {
+function PolicyPage({ consent, config }: { consent: boolean; config: SiteConfig }) {
+  const { contacts } = config;
   const title = consent
     ? "Согласие на обработку персональных данных"
     : "Политика конфиденциальности";
   return (
-    <SiteShell>
+    <SiteShell config={config}>
       <article className="legal-page">
         <Breadcrumbs current={title} />
         <p className="eyebrow">Правовая информация</p>
@@ -332,7 +333,7 @@ function PolicyPage({ consent }: { consent: boolean }) {
             <h2>2. Цели и основания</h2>
             <p>Данные используются для ответа на обращение, согласования услуг, обеспечения работы и безопасности сайта. Данные из формы обрабатываются на основании согласия пользователя.</p>
             <h2>3. Передача и хранение</h2>
-            <p>Для доставки заявок могут использоваться сервисы электронной почты, Telegram, MAX и SMS. Передаются только данные, необходимые для доставки сообщения. До подключения сервисов владелец сайта обязан оценить их условия и требования к локализации данных.</p>
+            <p>Для доставки заявок могут использоваться Telegram или защищенный webhook. Передаются только данные, необходимые для доставки сообщения. До подключения сервисов владелец сайта обязан оценить их условия и требования к локализации данных.</p>
             <h2>4. Права пользователя</h2>
             <p>Пользователь может запросить сведения об обработке, уточнение, блокирование или удаление данных, а также отозвать согласие по адресу <a href={`mailto:${contacts.email}`}>{contacts.email}</a>.</p>
             <h2>5. Безопасность</h2>

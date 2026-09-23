@@ -22,6 +22,19 @@ hosting="${SITES_PROJECT_ROOT}/dist/.openai/hosting.json"
 node --input-type=module - "${worker}" "${hosting}" <<'NODE'
 import { readFile } from "node:fs/promises";
 import { pathToFileURL } from "node:url";
+import { registerHooks } from "node:module";
+
+registerHooks({
+  resolve(specifier, context, nextResolve) {
+    if (specifier === "cloudflare:workers") {
+      return {
+        url: `data:text/javascript,${encodeURIComponent("export const env = new Proxy({}, { get: (_, key) => globalThis.__CLOUDFLARE_TEST_ENV__?.[key] });")}`,
+        shortCircuit: true,
+      };
+    }
+    return nextResolve(specifier, context);
+  },
+});
 
 const [workerPath, hostingPath] = process.argv.slice(2);
 JSON.parse(await readFile(hostingPath, "utf8"));

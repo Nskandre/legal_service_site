@@ -1,16 +1,21 @@
 import { LeadForm } from "./components/LeadForm";
-import { OpenLeadButton } from "./components/Actions";
+import Link from "next/link";
+import { OpenBookingButton, OpenLeadButton } from "./components/Actions";
 import { SiteShell } from "./components/SiteShell";
-import { contacts, services, siteUrl } from "./lib/content";
+import { services, siteUrl } from "./lib/content";
+import { configuredServices, getSiteConfig, type SiteConfig } from "./lib/site-config";
 
-const legalServiceSchema = {
+export const dynamic = "force-dynamic";
+
+function createLegalServiceSchema(pageContacts: SiteConfig["contacts"], pageServices: typeof services) {
+  return {
   "@context": "https://schema.org",
   "@type": "LegalService",
   "@id": `${siteUrl}/#legal-service`,
   name: "Юридическая практика Евгении Бычихиной",
   url: siteUrl,
-  telephone: contacts.phone,
-  email: contacts.email,
+  telephone: pageContacts.phone,
+  email: pageContacts.email,
   address: {
     "@type": "PostalAddress",
     addressLocality: "Москва",
@@ -30,7 +35,7 @@ const legalServiceSchema = {
   hasOfferCatalog: {
     "@type": "OfferCatalog",
     name: "Юридические услуги",
-    itemListElement: services.map((service) => ({
+    itemListElement: pageServices.map((service) => ({
       "@type": "Offer",
       itemOffered: {
         "@type": "Service",
@@ -39,11 +44,16 @@ const legalServiceSchema = {
       },
     })),
   },
-};
+  };
+}
 
-export default function Home() {
+export default async function Home() {
+  const config = await getSiteConfig();
+  const pageContacts = config.contacts;
+  const pageServices = configuredServices(config);
+  const legalServiceSchema = createLegalServiceSchema(pageContacts, pageServices);
   return (
-    <SiteShell>
+    <SiteShell config={config}>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(legalServiceSchema) }}
@@ -51,7 +61,7 @@ export default function Home() {
 
       <section className="hero">
         <div className="hero-copy reveal">
-          <p className="eyebrow">Юрист по гражданским делам · {contacts.workFormat}</p>
+          <p className="eyebrow">Юрист по гражданским делам · {pageContacts.workFormat}</p>
           <h1>Юридическая стратегия для сложных жизненных и имущественных вопросов</h1>
           <p className="hero-lead">
             Гражданско-правовая практика и глубокое знание судебной системы —
@@ -59,15 +69,13 @@ export default function Home() {
           </p>
           <div className="hero-actions">
             <OpenLeadButton />
-            <OpenLeadButton
-              label="Записаться на очную консультацию"
-              service="Очная консультация"
-              className="button--outline"
-            />
+            <OpenBookingButton className="button--outline" />
             <a className="button button--outline" href="#services">Услуги и стоимость</a>
           </div>
         </div>
-        <div className="hero-art reveal reveal--delay">
+        <div className="hero-art">
+          {/* A plain local image plus CSS background fallback is intentional for Android/Yandex compatibility. */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src="/hero-paper.png"
             alt="Композиция из фактурной бумаги и сургучной печати"
@@ -81,7 +89,7 @@ export default function Home() {
         <div className="trust-strip">
           <div><span className="trust-icon">§</span><b>Гражданско-правовая<br />специализация</b></div>
           <div><span className="trust-icon">◇</span><b>Опыт внутри<br />судебной системы</b></div>
-          <div><span className="trust-icon">⌖</span><b>{contacts.workFormat}</b></div>
+          <div><span className="trust-icon">⌖</span><b>{pageContacts.workFormat}</b></div>
         </div>
       </section>
 
@@ -97,7 +105,7 @@ export default function Home() {
           </p>
         </div>
         <div className="service-grid">
-          {services.map((service, index) => (
+          {pageServices.map((service, index) => (
             <a className="service-card" href={`/uslugi/${service.slug}`} key={service.slug}>
               <span className="service-number">0{index + 1}</span>
               <h3>{service.short}</h3>
@@ -117,10 +125,10 @@ export default function Home() {
             адвокатов и частной практике помогает видеть процесс целиком:
             от качества доказательств до контроля исполнения судебного акта.
           </p>
-          <a className="text-link" href="/ob-avtore">Подробнее об опыте <i>↗</i></a>
+          <Link className="text-link" href="/ob-avtore">Подробнее об опыте <i>↗</i></Link>
         </div>
         <div className="experience-list">
-          <div><b>10+ лет</b><span>в юридической сфере</span></div>
+          <div><b>{config.experienceYears}</b><span>в юридической сфере</span></div>
           <div><b>Гражданское право</b><span>профильное высшее образование</span></div>
           <div><b>Судебная система</b><span>опыт организации судебной работы и контроля исполнения</span></div>
         </div>
@@ -158,7 +166,7 @@ export default function Home() {
             нужны и какой формат помощи подойдет.
           </p>
         </div>
-        <LeadForm />
+        <LeadForm contactDetails={pageContacts} />
       </section>
     </SiteShell>
   );
