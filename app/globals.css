@@ -1430,6 +1430,86 @@ textarea:focus-visible {
   margin-top: 30px;
 }
 
+.admin-leads {
+  max-width: 1180px;
+  margin: 0 auto 22px;
+}
+
+.admin-card-heading,
+.admin-lead header {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  align-items: start;
+}
+
+.admin-card-heading p,
+.admin-lead header span {
+  color: var(--taupe);
+}
+
+.admin-lead-filters {
+  display: grid;
+  grid-template-columns: 2fr 1fr auto;
+  gap: 14px;
+  margin: 24px 0;
+  align-items: end;
+}
+
+.admin-lead-list {
+  display: grid;
+  gap: 14px;
+}
+
+.admin-lead {
+  padding: 20px;
+  border: 1px solid var(--hairline);
+  border-radius: 14px;
+  background: #fff;
+}
+
+.admin-lead header div,
+.admin-lead-details p {
+  display: grid;
+  gap: 4px;
+}
+
+.admin-lead-details {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  padding: 18px 0;
+}
+
+.admin-lead-details span {
+  color: var(--taupe);
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.admin-lead-actions {
+  display: grid;
+  grid-template-columns: 180px minmax(240px, 1fr) auto auto;
+  gap: 12px;
+  align-items: end;
+}
+
+.admin-lead-notes textarea {
+  min-height: 72px;
+  padding: 10px 13px;
+  border: 1px solid var(--hairline);
+  border-radius: 9px;
+  resize: vertical;
+}
+
+.admin-card select {
+  min-height: 48px;
+  padding: 10px 13px;
+  border: 1px solid var(--hairline);
+  border-radius: 9px;
+  background: #fff;
+}
+
 .admin-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1906,8 +1986,16 @@ textarea:focus-visible {
 
   .admin-grid,
   .admin-price-list,
-  .admin-slot-add {
+  .admin-slot-add,
+  .admin-lead-filters,
+  .admin-lead-details,
+  .admin-lead-actions {
     grid-template-columns: 1fr;
+  }
+
+  .admin-card-heading,
+  .admin-lead header {
+    flex-direction: column;
   }
 
   .admin-wide {

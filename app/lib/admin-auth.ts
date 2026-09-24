@@ -1,4 +1,5 @@
 import { workerBindings } from "./site-config";
+import { databaseConfigured } from "@runtime/database";
 
 const COOKIE_NAME = "legal_admin_session";
 const SESSION_SECONDS = 8 * 60 * 60;
@@ -33,7 +34,11 @@ async function signature(expires: string, secret: string) {
 
 export function adminConfigured() {
   const bindings = workerBindings();
-  return Boolean(bindings.ADMIN_PASSWORD && bindings.ADMIN_SESSION_SECRET && bindings.SITE_CONFIG);
+  return Boolean(
+    bindings.ADMIN_PASSWORD &&
+    bindings.ADMIN_SESSION_SECRET &&
+    (databaseConfigured() || bindings.SITE_CONFIG),
+  );
 }
 
 export async function passwordMatches(candidate: string) {
@@ -73,5 +78,13 @@ export function clearSessionCookie() {
 
 export function sameOrigin(request: Request) {
   const origin = request.headers.get("origin");
-  return !origin || origin === new URL(request.url).origin;
+  const fetchSite = request.headers.get("sec-fetch-site");
+  return (!origin || origin === new URL(request.url).origin) &&
+    (!fetchSite || fetchSite === "same-origin");
+}
+
+export async function requestClientKey(request: Request) {
+  const forwarded = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim();
+  const address = forwarded || request.headers.get("cf-connecting-ip") || "unknown";
+  return bytesToBase64Url(await digest(address));
 }

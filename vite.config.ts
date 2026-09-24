@@ -1,5 +1,6 @@
 import vinext from "vinext";
 import { defineConfig } from "vite";
+import path from "node:path";
 import hostingConfig from "./.openai/hosting.json";
 import { sites } from "./build/sites-vite-plugin";
 
@@ -51,6 +52,12 @@ export default defineConfig(async () => {
   const { cloudflare } = await import("@cloudflare/vite-plugin");
 
   return {
+    resolve: {
+      alias: {
+        "@runtime/database": path.resolve(process.cwd(), "app/lib/database-cloudflare.ts"),
+        "@runtime/environment": path.resolve(process.cwd(), "app/lib/environment-cloudflare.ts"),
+      },
+    },
     server: {
       host: "0.0.0.0",
       allowedHosts: ["terminal.local"],

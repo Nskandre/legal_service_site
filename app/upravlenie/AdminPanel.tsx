@@ -6,6 +6,19 @@ import type { SiteConfig } from "../lib/site-config";
 import { pricingItems, services } from "../lib/content";
 
 type Status = "idle" | "loading" | "saving" | "saved" | "error";
+type LeadStatus = "new" | "in_progress" | "done" | "declined" | "anonymized";
+type LeadRecord = {
+  id: string;
+  public_number: string;
+  name: string;
+  contact: string;
+  service: string;
+  message: string;
+  status: LeadStatus;
+  notes: string;
+  created_at: string;
+  anonymized_at: string | null;
+};
 
 export function AdminPanel() {
   const [config, setConfig] = useState<SiteConfig | null>(null);
@@ -14,6 +27,9 @@ export function AdminPanel() {
   const [message, setMessage] = useState("");
   const [slotDate, setSlotDate] = useState("");
   const [slotTime, setSlotTime] = useState("");
+  const [leads, setLeads] = useState<LeadRecord[]>([]);
+  const [leadQuery, setLeadQuery] = useState("");
+  const [leadStatus, setLeadStatus] = useState("");
 
   async function load() {
     const response = await fetch("/api/admin/config", { cache: "no-store" });
@@ -31,12 +47,45 @@ export function AdminPanel() {
     setConfig(result.config);
     setAuthorized(true);
     setStatus("idle");
+    await loadLeads();
+  }
+
+  async function loadLeads(query = leadQuery, selectedStatus = leadStatus) {
+    const params = new URLSearchParams();
+    if (query) params.set("q", query);
+    if (selectedStatus) params.set("status", selectedStatus);
+    const response = await fetch("/api/admin/leads?" + params, { cache: "no-store" });
+    const result = await response.json().catch(() => ({})) as { leads?: LeadRecord[] };
+    if (response.ok && result.leads) setLeads(result.leads);
+  }
+
+  async function saveLead(lead: LeadRecord) {
+    const response = await fetch("/api/admin/leads", {
+      method: "PATCH",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ id: lead.id, status: lead.status, notes: lead.notes }),
+    });
+    if (!response.ok) setMessage("Не удалось сохранить заявку №" + lead.public_number + ".");
+    else await loadLeads();
+  }
+
+  async function anonymize(lead: LeadRecord) {
+    if (!window.confirm("Обезличить заявку №" + lead.public_number + "? Это действие необратимо.")) return;
+    const response = await fetch("/api/admin/leads", {
+      method: "PATCH",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ id: lead.id, action: "anonymize" }),
+    });
+    if (!response.ok) setMessage("Не удалось обезличить заявку.");
+    else await loadLeads();
   }
 
   useEffect(() => {
     // The first protected request establishes whether a valid session exists.
     // eslint-disable-next-line react-hooks/set-state-in-effect
     void load();
+    // Loading is intentionally performed once for the current session cookie.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   async function login(event: FormEvent<HTMLFormElement>) {
@@ -122,6 +171,25 @@ export function AdminPanel() {
         <div><p className="eyebrow">Закрытый раздел</p><h1>Управление сайтом</h1><p>Контакты, цены, стаж и свободное время для консультаций.</p></div>
         <div className="admin-heading-actions"><Link className="button button--outline" href="/" target="_blank">Открыть сайт</Link><button className="button button--quiet" type="button" onClick={async () => { await fetch("/api/admin/logout", { method: "POST" }); location.reload(); }}>Выйти</button></div>
       </header>
+
+      <section className="admin-card admin-leads">
+        <div className="admin-card-heading">
+          <div><h2>Журнал заявок</h2><p>Персональные данные доступны только в этом защищённом разделе.</p></div>
+          <button className="button button--outline" type="button" onClick={() => void loadLeads()}>Обновить</button>
+        </div>
+        <div className="admin-lead-filters">
+          <label><span>Поиск</span><input value={leadQuery} onChange={(event) => setLeadQuery(event.target.value)} placeholder="Номер, имя, контакт или услуга" /></label>
+          <label><span>Статус</span><select value={leadStatus} onChange={(event) => setLeadStatus(event.target.value)}><option value="">Все</option><option value="new">Новые</option><option value="in_progress">В работе</option><option value="done">Завершённые</option><option value="declined">Отклонённые</option></select></label>
+          <button className="button button--primary" type="button" onClick={() => void loadLeads()}>Найти</button>
+        </div>
+        {leads.length ? <div className="admin-lead-list">
+          {leads.map((lead) => <article className="admin-lead" key={lead.id}>
+            <header><div><b>Заявка №{lead.public_number}</b><span>{new Intl.DateTimeFormat("ru-RU", { dateStyle: "medium", timeStyle: "short" }).format(new Date(lead.created_at))}</span></div><strong>{lead.service}</strong></header>
+            {lead.status !== "anonymized" ? <><div className="admin-lead-details"><p><span>Имя</span>{lead.name}</p><p><span>Контакт</span>{lead.contact}</p><p className="admin-wide"><span>Сообщение</span>{lead.message}</p></div>
+            <div className="admin-lead-actions"><label><span>Статус</span><select value={lead.status} onChange={(event) => setLeads((items) => items.map((item) => item.id === lead.id ? { ...item, status: event.target.value as LeadStatus } : item))}><option value="new">Новая</option><option value="in_progress">В работе</option><option value="done">Завершена</option><option value="declined">Отклонена</option></select></label><label className="admin-lead-notes"><span>Заметка</span><textarea value={lead.notes} onChange={(event) => setLeads((items) => items.map((item) => item.id === lead.id ? { ...item, notes: event.target.value } : item))} /></label><button className="button button--outline" type="button" onClick={() => void saveLead(lead)}>Сохранить</button><button className="button button--quiet" type="button" onClick={() => void anonymize(lead)}>Обезличить</button></div></> : <p className="admin-empty">Заявка обезличена.</p>}
+          </article>)}
+        </div> : <p className="admin-empty">Заявок по выбранным условиям нет.</p>}
+      </section>
 
       <form className="admin-form" onSubmit={save}>
         <section className="admin-card">

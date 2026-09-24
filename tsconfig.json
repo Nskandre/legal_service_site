@@ -19,7 +19,9 @@
       }
     ],
     "paths": {
-      "@/*": ["./*"]
+      "@/*": ["./*"],
+      "@runtime/database": ["./app/lib/database-cloudflare.ts"],
+      "@runtime/environment": ["./app/lib/environment-cloudflare.ts"]
     }
   },
   "include": [

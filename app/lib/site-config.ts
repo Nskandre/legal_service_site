@@ -1,5 +1,10 @@
-import { env } from "cloudflare:workers";
+import { runtimeEnv as env } from "@runtime/environment";
 import { contacts, pricingItems, services } from "./content";
+import {
+  databaseConfigured,
+  getDatabaseConfig,
+  saveDatabaseConfig,
+} from "@runtime/database";
 
 export type BookingSlot = { date: string; time: string };
 
@@ -80,6 +85,9 @@ export function normalizeSiteConfig(value: unknown): SiteConfig {
 
 export async function getSiteConfig(): Promise<SiteConfig> {
   try {
+    if (databaseConfigured()) {
+      return normalizeSiteConfig(await getDatabaseConfig());
+    }
     const kv = workerBindings().SITE_CONFIG;
     if (!kv) return defaultSiteConfig;
     return normalizeSiteConfig(await kv.get("public-site-config", "json"));
@@ -89,9 +97,13 @@ export async function getSiteConfig(): Promise<SiteConfig> {
 }
 
 export async function saveSiteConfig(value: unknown) {
+  const normalized = normalizeSiteConfig(value);
+  if (databaseConfigured()) {
+    await saveDatabaseConfig(normalized);
+    return normalized;
+  }
   const kv = workerBindings().SITE_CONFIG;
   if (!kv) throw new Error("SITE_CONFIG binding is not configured");
-  const normalized = normalizeSiteConfig(value);
   await kv.put("public-site-config", JSON.stringify(normalized));
   return normalized;
 }
