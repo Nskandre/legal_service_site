@@ -1488,6 +1488,32 @@ textarea:focus-visible {
   font-weight: 600;
 }
 
+.admin-deliveries {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.admin-delivery {
+  padding: 5px 9px;
+  border-radius: 999px;
+  background: #f3f0eb;
+  color: var(--taupe);
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.admin-delivery--sent {
+  background: #e8f3eb;
+  color: #326343;
+}
+
+.admin-delivery--failed {
+  background: #fbe9e7;
+  color: #8a342b;
+}
+
 .admin-lead-actions {
   display: grid;
   grid-template-columns: 180px minmax(240px, 1fr) auto auto;

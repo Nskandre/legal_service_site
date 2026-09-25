@@ -84,13 +84,24 @@ export async function listLeads(options: { query?: string; status?: string; limi
   const limit = Math.min(Math.max(options.limit ?? 100, 1), 250);
   const pattern = "%" + query + "%";
   return sql()`
-    SELECT id, public_number, name, contact, service, message, status, notes, source,
-           created_at, updated_at, anonymized_at
-    FROM leads
-    WHERE (${query} = '' OR name ILIKE ${pattern} OR contact ILIKE ${pattern}
-           OR service ILIKE ${pattern} OR CAST(public_number AS text) = ${query})
-      AND (${status} = '' OR status = ${status})
-    ORDER BY created_at DESC
+    SELECT l.id, l.public_number, l.name, l.contact, l.service, l.message, l.status,
+           l.notes, l.source, l.created_at, l.updated_at, l.anonymized_at,
+           COALESCE((
+             SELECT json_agg(json_build_object(
+               'channel', o.channel,
+               'status', o.status,
+               'attempts', o.attempts,
+               'last_error', o.last_error,
+               'sent_at', o.sent_at
+             ) ORDER BY o.id)
+             FROM delivery_outbox o
+             WHERE o.lead_id = l.id
+           ), '[]'::json) AS deliveries
+    FROM leads l
+    WHERE (${query} = '' OR l.name ILIKE ${pattern} OR l.contact ILIKE ${pattern}
+           OR l.service ILIKE ${pattern} OR CAST(l.public_number AS text) = ${query})
+      AND (${status} = '' OR l.status = ${status})
+    ORDER BY l.created_at DESC
     LIMIT ${limit}
   `;
 }

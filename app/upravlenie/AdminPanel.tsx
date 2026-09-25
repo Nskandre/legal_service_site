@@ -7,6 +7,13 @@ import { pricingItems, services } from "../lib/content";
 
 type Status = "idle" | "loading" | "saving" | "saved" | "error";
 type LeadStatus = "new" | "in_progress" | "done" | "declined" | "anonymized";
+type DeliveryRecord = {
+  channel: "telegram" | "max" | "email" | "webhook";
+  status: "pending" | "failed" | "sent";
+  attempts: number;
+  last_error: string | null;
+  sent_at: string | null;
+};
 type LeadRecord = {
   id: string;
   public_number: string;
@@ -18,6 +25,20 @@ type LeadRecord = {
   notes: string;
   created_at: string;
   anonymized_at: string | null;
+  deliveries: DeliveryRecord[];
+};
+
+const deliveryNames: Record<DeliveryRecord["channel"], string> = {
+  telegram: "Telegram",
+  max: "MAX",
+  email: "Email",
+  webhook: "Webhook",
+};
+
+const deliveryStatuses: Record<DeliveryRecord["status"], string> = {
+  pending: "ожидает",
+  failed: "ошибка",
+  sent: "отправлено",
 };
 
 export function AdminPanel() {
@@ -185,6 +206,7 @@ export function AdminPanel() {
         {leads.length ? <div className="admin-lead-list">
           {leads.map((lead) => <article className="admin-lead" key={lead.id}>
             <header><div><b>Заявка №{lead.public_number}</b><span>{new Intl.DateTimeFormat("ru-RU", { dateStyle: "medium", timeStyle: "short" }).format(new Date(lead.created_at))}</span></div><strong>{lead.service}</strong></header>
+            {lead.deliveries?.length ? <div className="admin-deliveries" aria-label="Статусы уведомлений">{lead.deliveries.map((delivery) => <span className={`admin-delivery admin-delivery--${delivery.status}`} key={delivery.channel}>{deliveryNames[delivery.channel]}: {deliveryStatuses[delivery.status]}{delivery.status === "failed" ? `, попыток: ${delivery.attempts}` : ""}</span>)}</div> : null}
             {lead.status !== "anonymized" ? <><div className="admin-lead-details"><p><span>Имя</span>{lead.name}</p><p><span>Контакт</span>{lead.contact}</p><p className="admin-wide"><span>Сообщение</span>{lead.message}</p></div>
             <div className="admin-lead-actions"><label><span>Статус</span><select value={lead.status} onChange={(event) => setLeads((items) => items.map((item) => item.id === lead.id ? { ...item, status: event.target.value as LeadStatus } : item))}><option value="new">Новая</option><option value="in_progress">В работе</option><option value="done">Завершена</option><option value="declined">Отклонена</option></select></label><label className="admin-lead-notes"><span>Заметка</span><textarea value={lead.notes} onChange={(event) => setLeads((items) => items.map((item) => item.id === lead.id ? { ...item, notes: event.target.value } : item))} /></label><button className="button button--outline" type="button" onClick={() => void saveLead(lead)}>Сохранить</button><button className="button button--quiet" type="button" onClick={() => void anonymize(lead)}>Обезличить</button></div></> : <p className="admin-empty">Заявка обезличена.</p>}
           </article>)}
