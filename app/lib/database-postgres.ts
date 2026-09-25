@@ -141,15 +141,37 @@ export async function anonymizeLead(id: string) {
   return Boolean(rows.length);
 }
 
-export async function deleteTestLead(id: string) {
-  const rows = await sql()`
-    DELETE FROM leads
-    WHERE id = ${id}
-      AND contact LIKE 'test-%@example.invalid'
-      AND service LIKE '%D-013%'
-    RETURNING id
-  `;
-  return Boolean(rows.length);
+export async function deleteLeads(ids: string[], resetCounter = false) {
+  if (!ids.length && !resetCounter) return { deleted: 0, counterReset: false };
+
+  return sql().begin(async (transaction) => {
+    if (resetCounter) {
+      await transaction`LOCK TABLE leads IN ACCESS EXCLUSIVE MODE`;
+    }
+
+    let deleted = 0;
+    if (ids.length) {
+      const rows = await transaction`
+        DELETE FROM leads
+        WHERE id = ANY(${ids})
+        RETURNING id
+      `;
+      deleted = rows.length;
+    }
+
+    let counterReset = false;
+    if (resetCounter) {
+      const remaining = await transaction<[{ count: string }]>`
+        SELECT count(*)::text AS count FROM leads
+      `;
+      if (Number(remaining[0]?.count ?? 0) === 0) {
+        await transaction`ALTER TABLE leads ALTER COLUMN public_number RESTART WITH 1`;
+        counterReset = true;
+      }
+    }
+
+    return { deleted, counterReset };
+  });
 }
 
 export async function anonymizeExpiredLeads(days: number) {

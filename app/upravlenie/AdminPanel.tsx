@@ -51,6 +51,7 @@ export function AdminPanel() {
   const [leads, setLeads] = useState<LeadRecord[]>([]);
   const [leadQuery, setLeadQuery] = useState("");
   const [leadStatus, setLeadStatus] = useState("");
+  const [selectedLeadIds, setSelectedLeadIds] = useState<string[]>([]);
 
   async function load() {
     const response = await fetch("/api/admin/config", { cache: "no-store" });
@@ -77,7 +78,11 @@ export function AdminPanel() {
     if (selectedStatus) params.set("status", selectedStatus);
     const response = await fetch("/api/admin/leads?" + params, { cache: "no-store" });
     const result = await response.json().catch(() => ({})) as { leads?: LeadRecord[] };
-    if (response.ok && result.leads) setLeads(result.leads);
+    if (response.ok && result.leads) {
+      setLeads(result.leads);
+      const availableIds = new Set(result.leads.map((lead) => lead.id));
+      setSelectedLeadIds((ids) => ids.filter((id) => availableIds.has(id)));
+    }
   }
 
   async function saveLead(lead: LeadRecord) {
@@ -99,6 +104,47 @@ export function AdminPanel() {
     });
     if (!response.ok) setMessage("Не удалось обезличить заявку.");
     else await loadLeads();
+  }
+
+  async function deleteSelectedLeads() {
+    if (!selectedLeadIds.length) return;
+    const confirmed = window.confirm(
+      `Удалить выбранные заявки: ${selectedLeadIds.length}? Заявки, история и статусы уведомлений будут удалены без возможности восстановления.`,
+    );
+    if (!confirmed) return;
+    const response = await fetch("/api/admin/leads", {
+      method: "DELETE",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ ids: selectedLeadIds }),
+    });
+    const result = await response.json().catch(() => ({})) as { deleted?: number };
+    if (!response.ok) {
+      setMessage("Не удалось удалить выбранные заявки.");
+      return;
+    }
+    setSelectedLeadIds([]);
+    setMessage(`Удалено заявок: ${result.deleted ?? selectedLeadIds.length}.`);
+    await loadLeads();
+  }
+
+  async function resetLeadNumbering() {
+    const confirmed = window.confirm(
+      "Сбросить нумерацию заявок? Это возможно только при пустом журнале. Следующая заявка получит номер 1.",
+    );
+    if (!confirmed) return;
+    const response = await fetch("/api/admin/leads", {
+      method: "DELETE",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ ids: [], resetCounter: true }),
+    });
+    const result = await response.json().catch(() => ({})) as { counterReset?: boolean; error?: string };
+    if (!response.ok || !result.counterReset) {
+      setMessage(result.error === "journal_not_empty"
+        ? "Нумерацию можно сбросить только после удаления всех заявок."
+        : "Не удалось сбросить нумерацию заявок.");
+      return;
+    }
+    setMessage("Нумерация сброшена. Следующая заявка получит номер 1.");
   }
 
   useEffect(() => {
@@ -210,9 +256,17 @@ export function AdminPanel() {
           <label><span>Статус</span><select value={leadStatus} onChange={(event) => setLeadStatus(event.target.value)}><option value="">Все</option><option value="new">Новые</option><option value="in_progress">В работе</option><option value="done">Завершённые</option><option value="declined">Отклонённые</option></select></label>
           <button className="button button--primary" type="button" onClick={() => void loadLeads()}>Найти</button>
         </div>
+        <div className="admin-lead-maintenance">
+          <p>Сброс нумерации доступен только при пустом журнале.</p>
+          <button className="button button--outline" type="button" onClick={() => void resetLeadNumbering()}>Сбросить нумерацию заявок</button>
+        </div>
+        {leads.length ? <div className="admin-lead-selection">
+          <label><input className="admin-lead-checkbox" type="checkbox" checked={selectedLeadIds.length === leads.length} onChange={(event) => setSelectedLeadIds(event.target.checked ? leads.map((lead) => lead.id) : [])} /><span>Выбрать все показанные</span></label>
+          <button className="button button--quiet" type="button" disabled={!selectedLeadIds.length} onClick={() => void deleteSelectedLeads()}>Удалить выбранные{selectedLeadIds.length ? ` (${selectedLeadIds.length})` : ""}</button>
+        </div> : null}
         {leads.length ? <div className="admin-lead-list">
           {leads.map((lead) => <article className="admin-lead" key={lead.id}>
-            <header><div><b>Заявка №{lead.public_number}</b><span>{new Intl.DateTimeFormat("ru-RU", { dateStyle: "medium", timeStyle: "short" }).format(new Date(lead.created_at))}</span></div><strong>{lead.service}</strong></header>
+            <header><label className="admin-lead-title"><input className="admin-lead-checkbox" type="checkbox" checked={selectedLeadIds.includes(lead.id)} onChange={(event) => setSelectedLeadIds((ids) => event.target.checked ? [...ids, lead.id] : ids.filter((id) => id !== lead.id))} aria-label={`Выбрать заявку №${lead.public_number}`} /><span><b>Заявка №{lead.public_number}</b><small>{new Intl.DateTimeFormat("ru-RU", { dateStyle: "medium", timeStyle: "short" }).format(new Date(lead.created_at))}</small></span></label><strong>{lead.service}</strong></header>
             {lead.deliveries?.length ? <div className="admin-deliveries" aria-label="Статусы уведомлений">{lead.deliveries.map((delivery) => <span className={`admin-delivery admin-delivery--${delivery.status}`} key={delivery.channel}>{deliveryNames[delivery.channel]}: {deliveryStatuses[delivery.status]}{delivery.status === "failed" ? `, попыток: ${delivery.attempts}` : ""}</span>)}</div> : null}
             {lead.status !== "anonymized" ? <><div className="admin-lead-details"><p><span>Имя</span>{lead.name}</p><p><span>Контакт</span>{lead.contact}</p><p className="admin-wide"><span>Сообщение</span>{lead.message}</p></div>
             <div className="admin-lead-actions"><label><span>Статус</span><select value={lead.status} onChange={(event) => setLeads((items) => items.map((item) => item.id === lead.id ? { ...item, status: event.target.value as LeadStatus } : item))}><option value="new">Новая</option><option value="in_progress">В работе</option><option value="done">Завершена</option><option value="declined">Отклонена</option></select></label><label className="admin-lead-notes"><span>Заметка</span><textarea value={lead.notes} onChange={(event) => setLeads((items) => items.map((item) => item.id === lead.id ? { ...item, notes: event.target.value } : item))} /></label><button className="button button--outline" type="button" onClick={() => void saveLead(lead)}>Сохранить</button><button className="button button--quiet" type="button" onClick={() => void anonymize(lead)}>Обезличить</button></div></> : <p className="admin-empty">Заявка обезличена.</p>}

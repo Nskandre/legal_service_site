@@ -1500,6 +1500,55 @@ textarea:focus-visible {
   align-items: end;
 }
 
+.admin-lead-maintenance {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin: -4px 0 18px;
+  padding: 12px 14px;
+  border: 1px solid var(--hairline);
+  border-radius: 12px;
+}
+
+.admin-lead-maintenance p {
+  margin: 0;
+  color: var(--taupe);
+  font-size: 0.9rem;
+}
+
+.admin-lead-selection {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin: -4px 0 18px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: var(--oat);
+}
+
+.admin-lead-selection label,
+.admin-lead-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+}
+
+.admin-lead-checkbox {
+  width: 18px;
+  min-height: 0;
+  height: 18px;
+  margin: 0;
+  accent-color: var(--burgundy);
+}
+
+.admin-lead-title span {
+  display: grid;
+  gap: 4px;
+}
+
 .admin-lead-list {
   display: grid;
   gap: 14px;
@@ -1512,7 +1561,7 @@ textarea:focus-visible {
   background: #fff;
 }
 
-.admin-lead header div,
+.admin-lead-title span,
 .admin-lead-details p {
   display: grid;
   gap: 4px;
@@ -2068,7 +2117,9 @@ textarea:focus-visible {
   }
 
   .admin-card-heading,
-  .admin-lead header {
+  .admin-lead header,
+  .admin-lead-maintenance,
+  .admin-lead-selection {
     flex-direction: column;
   }
 

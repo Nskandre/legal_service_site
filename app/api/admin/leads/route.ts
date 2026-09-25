@@ -6,7 +6,7 @@ import {
   anonymizeExpiredLeads,
   anonymizeLead,
   databaseConfigured,
-  deleteTestLead,
+  deleteLeads,
   listLeads,
   retryTestDeliveries,
   updateLead,
@@ -60,13 +60,21 @@ export async function DELETE(request: Request) {
   if (!sameOrigin(request)) return Response.json({ ok: false }, { status: 403, headers: noStore });
   if (!(await isAdmin(request))) return Response.json({ ok: false }, { status: 401, headers: noStore });
   if (!databaseConfigured()) return Response.json({ ok: false }, { status: 503, headers: noStore });
-  const body = await request.json().catch(() => ({})) as { id?: unknown };
-  const id = typeof body.id === "string" ? body.id : "";
-  if (!id) return Response.json({ ok: false }, { status: 400, headers: noStore });
-  const deleted = await deleteTestLead(id);
-  return deleted
-    ? Response.json({ ok: true }, { headers: noStore })
-    : Response.json({ ok: false }, { status: 404, headers: noStore });
+  const body = await request.json().catch(() => ({})) as { ids?: unknown; resetCounter?: unknown };
+  const resetCounter = body.resetCounter === true;
+  const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+  if (!Array.isArray(body.ids) || body.ids.length > 100 || (!body.ids.length && !resetCounter)) {
+    return Response.json({ ok: false }, { status: 400, headers: noStore });
+  }
+  const ids = [...new Set(body.ids)];
+  if (!ids.every((id): id is string => typeof id === "string" && uuidPattern.test(id))) {
+    return Response.json({ ok: false }, { status: 400, headers: noStore });
+  }
+  const result = await deleteLeads(ids, resetCounter);
+  if (resetCounter && !result.counterReset) {
+    return Response.json({ ok: false, ...result, error: "journal_not_empty" }, { status: 409, headers: noStore });
+  }
+  return Response.json({ ok: true, ...result }, { headers: noStore });
 }
 export async function POST(request: Request) {
   if (!sameOrigin(request)) return Response.json({ ok: false }, { status: 403, headers: noStore });
