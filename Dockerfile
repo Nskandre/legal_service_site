@@ -21,7 +21,6 @@ COPY --from=builder /app/public ./public
 COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
 COPY --from=deps /app/node_modules/postgres ./node_modules/postgres
-COPY --from=deps /app/node_modules/nodemailer ./node_modules/nodemailer
 COPY --from=builder /app/migrations ./migrations
 COPY --from=builder /app/scripts/migrate.mjs ./scripts/migrate.mjs
 EXPOSE 8080

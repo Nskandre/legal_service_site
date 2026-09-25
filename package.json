@@ -23,7 +23,6 @@
   "dependencies": {
     "drizzle-orm": "0.45.2",
     "next": "16.2.6",
-    "nodemailer": "^7.0.6",
     "postgres": "^3.4.7",
     "react": "19.2.6",
     "react-dom": "19.2.6"
@@ -32,7 +31,6 @@
     "@cloudflare/vite-plugin": "1.37.1",
     "@tailwindcss/postcss": "4.2.1",
     "@types/node": "22.19.19",
-    "@types/nodemailer": "^6.4.17",
     "@types/react": "19.2.14",
     "@types/react-dom": "19.2.3",
     "@vitejs/plugin-react": "6.0.2",

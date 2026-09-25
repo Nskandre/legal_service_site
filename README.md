@@ -10,7 +10,7 @@
 - адаптивное меню и формы для desktop, Android и iPhone;
 - закрытая страница `/upravlenie` для контактов, цен, стажа, расписания и журнала заявок;
 - PostgreSQL-журнал со статусами, заметками, поиском и необратимым обезличиванием;
-- короткие уведомления без персональных данных через Telegram, email, MAX и webhook при наличии настроек;
+- короткие уведомления без персональных данных через Telegram, MAX и webhook при наличии настроек;
 - Schema.org, sitemap.xml, robots.txt и llms.txt;
 - клавиатурная доступность и поддержка `prefers-reduced-motion`.
 
@@ -55,10 +55,9 @@ node --test tests/rendered-html.test.mjs
 
 - Telegram: `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID`;
 - MAX: `MAX_BOT_TOKEN`, `MAX_CHAT_ID`;
-- email: `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`, `SMTP_USER`, `SMTP_PASSWORD`, `SMTP_FROM`, `LEAD_NOTIFICATION_EMAIL`;
 - webhook: `LEAD_WEBHOOK_URL`, при необходимости `LEAD_WEBHOOK_TOKEN`.
 
-Для текущей почты используются `smtp.yandex.ru`, порт `465`, защищённое соединение и адрес `legserv24@yandex.ru`. Пароль хранится только в Timeweb и локальном закрытом хранилище владельца.
+Email-уведомления отложены. Production-связка заявок: PostgreSQL, закрытый журнал /upravlenie и Telegram; старые email-задания сохраняются в истории, но повторно не обрабатываются.
 
 ## Как обрабатывается заявка
 

@@ -1,4 +1,3 @@
-import nodemailer from "nodemailer";
 import {
   databaseConfigured,
   markDeliveryFailed,
@@ -7,6 +6,7 @@ import {
   queueDelivery,
   type DeliveryChannel,
 } from "@runtime/database";
+import { configuredDeliveryChannels } from "./notification-channels";
 
 type PendingDelivery = {
   id: number;
@@ -14,20 +14,6 @@ type PendingDelivery = {
   attempts: number;
   public_number: string;
 };
-
-export function configuredDeliveryChannels(): DeliveryChannel[] {
-  const channels: DeliveryChannel[] = [];
-  if (process.env.TELEGRAM_BOT_TOKEN && process.env.TELEGRAM_CHAT_ID) channels.push("telegram");
-  if (process.env.MAX_BOT_TOKEN && process.env.MAX_CHAT_ID) channels.push("max");
-  if (
-    process.env.SMTP_HOST &&
-    process.env.SMTP_USER &&
-    process.env.SMTP_PASSWORD &&
-    process.env.LEAD_NOTIFICATION_EMAIL
-  ) channels.push("email");
-  if (process.env.LEAD_WEBHOOK_URL) channels.push("webhook");
-  return channels;
-}
 
 export async function enqueueLeadNotifications(leadId: string) {
   for (const channel of configuredDeliveryChannels()) await queueDelivery(leadId, channel);
@@ -56,21 +42,6 @@ async function deliver(item: PendingDelivery) {
       headers: { authorization: process.env.MAX_BOT_TOKEN || "", "content-type": "application/json" },
       body: JSON.stringify({ text }),
     });
-  }
-  if (item.channel === "email") {
-    const transporter = nodemailer.createTransport({
-      host: process.env.SMTP_HOST,
-      port: Number(process.env.SMTP_PORT || 465),
-      secure: process.env.SMTP_SECURE !== "false",
-      auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASSWORD },
-    });
-    await transporter.sendMail({
-      from: process.env.SMTP_FROM || process.env.SMTP_USER,
-      to: process.env.LEAD_NOTIFICATION_EMAIL,
-      subject: "Новая заявка с сайта №" + item.public_number,
-      text,
-    });
-    return new Response(null, { status: 204 });
   }
   return fetch(process.env.LEAD_WEBHOOK_URL || "", {
     method: "POST",
@@ -105,9 +76,11 @@ let flushing = false;
 
 export async function flushPendingNotifications() {
   if (!databaseConfigured() || flushing) return;
+  const channels = configuredDeliveryChannels();
+  if (!channels.length) return;
   flushing = true;
   try {
-    const items = await pendingDeliveries(20) as unknown as PendingDelivery[];
+    const items = await pendingDeliveries(channels, 20) as unknown as PendingDelivery[];
     for (const item of items) {
       try {
         const response = await deliver(item);
