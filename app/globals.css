@@ -347,6 +347,7 @@ textarea:focus-visible {
 
 .hero-copy {
   grid-area: copy;
+  min-width: 0;
   align-self: center;
   padding-bottom: 28px;
 }
@@ -1863,7 +1864,7 @@ textarea:focus-visible {
   }
 
   .hero h1 {
-    font-size: clamp(2.65rem, 11vw, 3.3rem);
+    font-size: clamp(2.35rem, 10vw, 3rem);
   }
 
   .hero-actions {
