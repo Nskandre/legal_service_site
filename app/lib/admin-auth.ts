@@ -79,8 +79,20 @@ export function clearSessionCookie() {
 export function sameOrigin(request: Request) {
   const origin = request.headers.get("origin");
   const fetchSite = request.headers.get("sec-fetch-site");
-  return (!origin || origin === new URL(request.url).origin) &&
-    (!fetchSite || fetchSite === "same-origin");
+  if (fetchSite && fetchSite !== "same-origin") return false;
+  if (!origin) return true;
+
+  const allowedOrigins = new Set([new URL(request.url).origin]);
+  const forwardedHost = request.headers.get("x-forwarded-host")?.split(",")[0]?.trim();
+  const forwardedProto = request.headers.get("x-forwarded-proto")?.split(",")[0]?.trim();
+  if (forwardedHost && (forwardedProto === "http" || forwardedProto === "https")) {
+    try {
+      allowedOrigins.add(new URL(`${forwardedProto}://${forwardedHost}`).origin);
+    } catch {
+      return false;
+    }
+  }
+  return allowedOrigins.has(origin);
 }
 
 export async function requestClientKey(request: Request) {
