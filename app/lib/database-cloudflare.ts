@@ -19,6 +19,7 @@ export const createLead: (input: unknown) => Promise<{
 export const listLeads: (options?: unknown) => Promise<unknown[]> = async () => unavailable();
 export const updateLead: (id: string, status: LeadStatus, notes: string) => Promise<unknown> = async () => unavailable();
 export const anonymizeLead: (id: string) => Promise<boolean> = async () => unavailable();
+export const deleteTestLead: (id: string) => Promise<boolean> = async () => unavailable();
 export const anonymizeExpiredLeads: (days: number) => Promise<number> = async () => 0;
 export const queueDelivery: (leadId: string, channel: DeliveryChannel) => Promise<void> = async () => unavailable();
 export const pendingDeliveries: (channels: DeliveryChannel[], limit?: number) => Promise<unknown[]> = async () => [];

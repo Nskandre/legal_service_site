@@ -141,6 +141,17 @@ export async function anonymizeLead(id: string) {
   return Boolean(rows.length);
 }
 
+export async function deleteTestLead(id: string) {
+  const rows = await sql()`
+    DELETE FROM leads
+    WHERE id = ${id}
+      AND contact LIKE 'test-%@example.invalid'
+      AND service LIKE '%D-013%'
+    RETURNING id
+  `;
+  return Boolean(rows.length);
+}
+
 export async function anonymizeExpiredLeads(days: number) {
   if (!Number.isFinite(days) || days < 1) return 0;
   const rows = await sql()`

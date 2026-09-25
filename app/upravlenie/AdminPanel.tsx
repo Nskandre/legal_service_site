@@ -193,7 +193,14 @@ export function AdminPanel() {
         <div className="admin-heading-actions"><Link className="button button--outline" href="/" target="_blank">Открыть сайт</Link><button className="button button--quiet" type="button" onClick={async () => { await fetch("/api/admin/logout", { method: "POST" }); location.reload(); }}>Выйти</button></div>
       </header>
 
-      <section className="admin-card admin-leads">
+      <nav className="admin-section-nav" aria-label="Разделы управления">
+        <a href="#admin-leads">Журнал заявок</a>
+        <a href="#admin-contacts">Контакты</a>
+        <a href="#admin-pricing">Стаж и цены</a>
+        <a href="#admin-slots">Свободное время</a>
+      </nav>
+
+      <section className="admin-card admin-leads" id="admin-leads">
         <div className="admin-card-heading">
           <div><h2>Журнал заявок</h2><p>Персональные данные доступны только в этом защищённом разделе.</p></div>
           <button className="button button--outline" type="button" onClick={() => void loadLeads()}>Обновить</button>
@@ -214,7 +221,7 @@ export function AdminPanel() {
       </section>
 
       <form className="admin-form" onSubmit={save}>
-        <section className="admin-card">
+        <section className="admin-card" id="admin-contacts">
           <h2>Контакты</h2>
           <div className="admin-grid">
             <label><span>Телефон на экране</span><input value={config.contacts.phoneDisplay} onChange={(event) => contact("phoneDisplay", event.target.value)} /></label>
@@ -227,7 +234,7 @@ export function AdminPanel() {
           </div>
         </section>
 
-        <section className="admin-card">
+        <section className="admin-card" id="admin-pricing">
           <h2>Стаж и цены</h2>
           <label className="admin-short"><span>Стаж на главной</span><input value={config.experienceYears} onChange={(event) => setConfig({ ...config, experienceYears: event.target.value })} /></label>
           <h3>Страницы услуг</h3>
@@ -240,7 +247,7 @@ export function AdminPanel() {
           </div>
         </section>
 
-        <section className="admin-card">
+        <section className="admin-card" id="admin-slots">
           <h2>Свободное время</h2>
           <p>Добавьте дату и время. Только эти слоты будут доступны в форме записи.</p>
           <div className="admin-slot-add">

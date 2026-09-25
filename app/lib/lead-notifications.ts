@@ -6,7 +6,7 @@ import {
   queueDelivery,
   type DeliveryChannel,
 } from "@runtime/database";
-import { configuredDeliveryChannels } from "./notification-channels";
+import { configuredDeliveryChannels, requestWithRetry } from "./notification-channels";
 
 type PendingDelivery = {
   id: number;
@@ -28,11 +28,11 @@ async function deliver(item: PendingDelivery) {
   const text = "Новая заявка №" + item.public_number +
     "\nОткройте защищённый журнал: " + adminUrl();
   if (item.channel === "telegram") {
-    return fetch("https://api.telegram.org/bot" + process.env.TELEGRAM_BOT_TOKEN + "/sendMessage", {
+    return requestWithRetry(() => fetch("https://api.telegram.org/bot" + process.env.TELEGRAM_BOT_TOKEN + "/sendMessage", {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({ chat_id: process.env.TELEGRAM_CHAT_ID, text, disable_web_page_preview: true }),
-    });
+    }));
   }
   if (item.channel === "max") {
     const url = new URL("https://platform-api2.max.ru/messages");
