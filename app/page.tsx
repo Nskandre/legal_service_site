@@ -130,7 +130,7 @@ export default async function Home() {
         <div className="experience-list">
           <div><b>{config.experienceYears}</b><span>в юридической сфере</span></div>
           <div><b>Гражданское право</b><span>профильное высшее образование</span></div>
-          <div><b>Судебная система</b><span>опыт организации судебной работы и контроля исполнения</span></div>
+          <div><b>Судебная система</b><span>опыт судебных процессов в районных и мировых судах города Москвы</span></div>
         </div>
       </section>
 

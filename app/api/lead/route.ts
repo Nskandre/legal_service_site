@@ -64,8 +64,9 @@ export async function POST(request: Request) {
   if (!(await consumeDatabaseRateLimit("lead:" + clientKey, 8, 900))) {
     return Response.json({ ok: false, error: "Слишком много заявок. Повторите позже" }, { status: 429 });
   }
+  let lead: Awaited<ReturnType<typeof createLead>>;
   try {
-    const lead = await createLead({
+    lead = await createLead({
       name,
       contact,
       message,
@@ -73,10 +74,15 @@ export async function POST(request: Request) {
       source: service === "Запись на консультацию" ? "booking" : "website",
       ipHash: clientKey,
     });
-    await enqueueLeadNotifications(lead.id);
-    await flushPendingNotifications();
-    return Response.json({ ok: true, number: lead.public_number });
   } catch {
     return Response.json({ ok: false, error: "Не удалось сохранить заявку" }, { status: 503 });
   }
+  try {
+    await enqueueLeadNotifications(lead.id);
+    await flushPendingNotifications();
+  } catch {
+    // The lead is already safe in PostgreSQL. A notification failure must not
+    // make the visitor submit the same personal data a second time.
+  }
+  return Response.json({ ok: true, number: lead.public_number });
 }

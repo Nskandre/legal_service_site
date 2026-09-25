@@ -205,7 +205,7 @@ export const services: Service[] = [
 export const contacts = {
   phoneDisplay: "+7 (939) 845-63-95",
   phone: "+79398456395",
-  email: "rinf@bk.ru",
+  email: "legserv24@yandex.ru",
   telegram:
     process.env.NEXT_PUBLIC_TELEGRAM_URL || "https://t.me/+79398456395",
   max:

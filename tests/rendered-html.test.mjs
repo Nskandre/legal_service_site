@@ -72,6 +72,7 @@ test("renders consistent services, work format and communication channels", asyn
   assert.match(home, />MAX</);
   assert.match(home, /Записаться на консультацию/);
   assert.match(home, /15\+ лет/);
+  assert.match(home, /опыт судебных процессов в районных и мировых судах города Москвы/);
   assert.match(
     home,
     /Информация на страницах сайта не является индивидуальной юридической консультацией и не содержит гарантии результата по делу\./,
@@ -85,7 +86,7 @@ test("renders consistent services, work format and communication channels", asyn
 
   assert.equal(contactsResponse.status, 200);
   assert.match(contacts, /\+7 \(939\) 845-63-95/);
-  assert.match(contacts, /rinf@bk\.ru/);
+  assert.match(contacts, /legserv24@yandex\.ru/);
   assert.match(contacts, /Написать в Telegram/);
   assert.match(contacts, /Написать в MAX/);
   assert.match(contacts, /Москва, метро Академическая \* онлайн по России/);
