@@ -1,10 +1,14 @@
+import { after } from "next/server";
 import { isAdmin, sameOrigin } from "../../../lib/admin-auth";
+import { configuredDeliveryChannels } from "../../../lib/notification-channels";
+import { flushPendingNotifications } from "../../../lib/lead-notifications";
 import {
   anonymizeExpiredLeads,
   anonymizeLead,
   databaseConfigured,
   deleteTestLead,
   listLeads,
+  retryTestDeliveries,
   updateLead,
   type LeadStatus,
 } from "@runtime/database";
@@ -63,4 +67,15 @@ export async function DELETE(request: Request) {
   return deleted
     ? Response.json({ ok: true }, { headers: noStore })
     : Response.json({ ok: false }, { status: 404, headers: noStore });
+}
+export async function POST(request: Request) {
+  if (!sameOrigin(request)) return Response.json({ ok: false }, { status: 403, headers: noStore });
+  if (!(await isAdmin(request))) return Response.json({ ok: false }, { status: 401, headers: noStore });
+  if (!databaseConfigured()) return Response.json({ ok: false }, { status: 503, headers: noStore });
+  const channels = configuredDeliveryChannels();
+  const queued = await retryTestDeliveries(channels);
+  after(async () => {
+    await flushPendingNotifications();
+  });
+  return Response.json({ ok: true, queued }, { headers: noStore });
 }

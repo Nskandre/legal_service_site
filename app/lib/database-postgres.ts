@@ -188,6 +188,23 @@ export async function pendingDeliveries(channels: DeliveryChannel[], limit = 20)
   `;
 }
 
+export async function retryTestDeliveries(channels: DeliveryChannel[]) {
+  if (!channels.length) return 0;
+  const rows = await sql()`
+    UPDATE delivery_outbox AS o
+    SET status = 'pending', attempts = 0, next_attempt_at = now(),
+        last_error = NULL, updated_at = now()
+    FROM leads AS l
+    WHERE o.lead_id = l.id
+      AND o.channel = ANY(${channels})
+      AND o.status = 'failed'
+      AND l.contact LIKE 'test-%@example.invalid'
+      AND l.service LIKE '%D-013%'
+    RETURNING o.id
+  `;
+  return rows.length;
+}
+
 export async function markDeliverySent(id: number) {
   await sql()`
     UPDATE delivery_outbox
