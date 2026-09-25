@@ -82,6 +82,25 @@ async function deliver(item: PendingDelivery) {
   });
 }
 
+function deliveryErrorMessage(error: unknown) {
+  const details = [error instanceof Error ? error.message : String(error)];
+  const cause = error instanceof Error
+    ? (error as Error & { cause?: unknown }).cause
+    : undefined;
+  if (cause && typeof cause === "object") {
+    const data = cause as { code?: unknown; message?: unknown; address?: unknown; port?: unknown };
+    for (const [label, value] of Object.entries({
+      cause: data.message,
+      code: data.code,
+      address: data.address,
+      port: data.port,
+    })) {
+      if (typeof value === "string" || typeof value === "number") details.push(label + "=" + value);
+    }
+  }
+  return details.join(" | ");
+}
+
 let flushing = false;
 
 export async function flushPendingNotifications() {
@@ -95,7 +114,7 @@ export async function flushPendingNotifications() {
         if (!response.ok) throw new Error("HTTP " + response.status);
         await markDeliverySent(item.id);
       } catch (error) {
-        await markDeliveryFailed(item.id, item.attempts, error instanceof Error ? error.message : "Unknown delivery error");
+        await markDeliveryFailed(item.id, item.attempts, deliveryErrorMessage(error));
       }
     }
   } finally {

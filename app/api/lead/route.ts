@@ -1,3 +1,4 @@
+import { after } from "next/server";
 import { requestClientKey } from "../../lib/admin-auth";
 import { consumeDatabaseRateLimit, createLead, databaseConfigured } from "@runtime/database";
 import { enqueueLeadNotifications, flushPendingNotifications } from "../../lib/lead-notifications";
@@ -79,7 +80,9 @@ export async function POST(request: Request) {
   }
   try {
     await enqueueLeadNotifications(lead.id);
-    await flushPendingNotifications();
+    after(async () => {
+      await flushPendingNotifications();
+    });
   } catch {
     // The lead is already safe in PostgreSQL. A notification failure must not
     // make the visitor submit the same personal data a second time.
