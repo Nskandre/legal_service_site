@@ -6,6 +6,9 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false, noarchive: true },
 };
 
+export const dynamic = "force-dynamic";
+export const fetchCache = "force-no-store";
+
 export default function AdminPage() {
   return <AdminPanel />;
 }

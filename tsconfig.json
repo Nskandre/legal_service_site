@@ -20,8 +20,7 @@
     ],
     "paths": {
       "@/*": ["./*"],
-      "@runtime/database": ["./app/lib/database-cloudflare.ts"],
-      "@runtime/environment": ["./app/lib/environment-cloudflare.ts"]
+      "@runtime/database": ["./app/lib/database-postgres.ts"]
     }
   },
   "include": [

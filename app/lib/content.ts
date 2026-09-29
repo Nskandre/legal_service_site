@@ -1,3 +1,5 @@
+import { siteUrl } from "./site-url";
+
 export type FAQ = { question: string; answer: string };
 
 export type Service = {
@@ -226,10 +228,9 @@ export const pricingItems = [
 export const nav = [
   { href: "/#services", label: "Услуги" },
   { href: "/ob-avtore", label: "Обо мне" },
-  { href: "/#practice", label: "Практика" },
+  { href: "/praktika", label: "Практика" },
   { href: "/stoimost", label: "Стоимость" },
   { href: "/kontakty", label: "Контакты" },
 ];
 
-export const siteUrl =
-  process.env.NEXT_PUBLIC_SITE_URL || "https://bychikhina-legal.example";
+export { siteUrl };

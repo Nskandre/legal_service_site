@@ -1,55 +1,54 @@
 import assert from "node:assert/strict";
-import test from "node:test";
-import { registerHooks } from "node:module";
+import { spawn } from "node:child_process";
+import { createServer } from "node:net";
+import test, { after, before } from "node:test";
 
-registerHooks({
-  resolve(specifier, context, nextResolve) {
-    if (specifier === "cloudflare:workers") {
-      return {
-        url: `data:text/javascript,${encodeURIComponent("export const env = new Proxy({}, { get: (_, key) => globalThis.__CLOUDFLARE_TEST_ENV__?.[key] });")}`,
-        shortCircuit: true,
-      };
-    }
-    return nextResolve(specifier, context);
-  },
-});
+let app;
+let baseUrl;
 
-const developmentPreviewMeta =
-  /<meta(?=[^>]*\bname=["']codex-preview["'])(?=[^>]*\bcontent=["']development["'])[^>]*>/i;
-
-function defaultRuntimeEnv() {
-  return {
-    SITE_CONFIG: {
-      get: async () => null,
-      put: async () => {},
-      delete: async () => {},
-    },
-    ASSETS: {
-      fetch: async () => new Response("Not found", { status: 404 }),
-    },
-  };
+async function availablePort() {
+  const server = createServer();
+  await new Promise((resolve, reject) => server.once("error", reject).listen(0, "127.0.0.1", resolve));
+  const { port } = server.address();
+  await new Promise((resolve) => server.close(resolve));
+  return port;
 }
 
-async function fetchWorker(path = "/", init = {}, runtimeEnv = defaultRuntimeEnv()) {
-  const workerUrl = new URL("../dist/server/index.js", import.meta.url);
-  workerUrl.searchParams.set("test", `${process.pid}-${Date.now()}-${path}`);
-  const { default: worker } = await import(workerUrl.href);
-  globalThis.__CLOUDFLARE_TEST_ENV__ = runtimeEnv;
-  return worker.fetch(
-    new Request(`http://localhost${path}`, init),
-    runtimeEnv,
-    {
-      waitUntil() {},
-      passThroughOnException() {},
-    },
-  );
+before(async () => {
+  const port = await availablePort();
+  baseUrl = `http://127.0.0.1:${port}`;
+  app = spawn(process.execPath, ["node_modules/next/dist/bin/next", "start", "-H", "127.0.0.1", "-p", String(port)], {
+    cwd: new URL("..", import.meta.url),
+    env: { ...process.env, NODE_ENV: "production", NEXT_PUBLIC_SITE_URL: "https://legservice.ru" },
+    stdio: ["ignore", "pipe", "pipe"],
+  });
+  let lastError;
+  for (let attempt = 0; attempt < 100; attempt += 1) {
+    if (app.exitCode !== null) throw new Error(`Next.js exited before tests with code ${app.exitCode}`);
+    try {
+      const response = await fetch(`${baseUrl}/api/health`);
+      if (response.ok) return;
+    } catch (error) {
+      lastError = error;
+    }
+    await new Promise((resolve) => setTimeout(resolve, 200));
+  }
+  throw new Error("Next.js did not become ready for rendered tests", { cause: lastError });
+});
+
+after(() => {
+  if (app && app.exitCode === null) app.kill();
+});
+
+async function fetchApp(path = "/", init = {}) {
+  return fetch(`${baseUrl}${path}`, init);
 }
 
 async function render(path = "/") {
-  return fetchWorker(path, { headers: { accept: "text/html" } });
+  return fetchApp(path, { headers: { accept: "text/html" } });
 }
 
-test("renders development preview metadata", async () => {
+test("renders production SEO metadata without preview markers", async () => {
   const response = await render();
 
   assert.equal(response.status, 200);
@@ -57,7 +56,13 @@ test("renders development preview metadata", async () => {
     response.headers.get("content-type") ?? "",
     /^text\/html\b/i,
   );
-  assert.match(await response.text(), developmentPreviewMeta);
+  const html = await response.text();
+  assert.doesNotMatch(html, /codex-preview|bychikhina-legal\.example/i);
+  assert.match(html, /<link[^>]+rel=["']canonical["'][^>]+href=["']https:\/\/legservice\.ru\/?["']/i);
+  assert.match(html, /<meta[^>]+property=["']og:url["'][^>]+content=["']https:\/\/legservice\.ru\/?["']/i);
+  assert.match(html, /<meta[^>]+property=["']og:image["'][^>]+content=["']https:\/\/legservice\.ru\/og-legal-service\.webp["']/i);
+  assert.match(html, /<meta[^>]+name=["']twitter:card["'][^>]+content=["']summary_large_image["']/i);
+  assert.match(html, /srcset=["'][^"']*hero-paper-640\.webp 640w[^"']*hero-paper-1122\.webp 1122w/i);
 });
 
 test("renders consistent services, work format and communication channels", async () => {
@@ -112,6 +117,17 @@ test("renders revised about, pricing and service wording", async () => {
   assert.doesNotMatch(service, /после изучения задачи/);
 });
 
+test("renders the approved indexable practice page with honest case framing", async () => {
+  const response = await render("/praktika");
+  const html = await response.text();
+
+  assert.equal(response.status, 200);
+  assert.match(html, /Практические ситуации/);
+  assert.match(html, /Это не описания конкретных выигранных дел и не гарантия результата/);
+  assert.doesNotMatch(html, /<meta[^>]+name=["']robots["'][^>]+content=["'][^"']*noindex/i);
+  assert.equal((html.match(/class=["'][^"']*case-card(?:\s|["'])/g) ?? []).length, 9);
+});
+
 test("keeps the administration page hidden from navigation and search", async () => {
   const home = await (await render("/")).text();
   assert.doesNotMatch(home, /href=["']\/upravlenie/);
@@ -123,52 +139,38 @@ test("keeps the administration page hidden from navigation and search", async ()
   assert.match(admin, /noindex/);
 
   const robots = await render("/robots.txt");
-  assert.match(await robots.text(), /Disallow: \/upravlenie/);
+  const robotsText = await robots.text();
+  assert.match(robotsText, /Disallow: \/upravlenie/);
+  assert.match(robotsText, /Sitemap: https:\/\/legservice\.ru\/sitemap\.xml/);
+  assert.doesNotMatch(robotsText, /\.example|localhost|preview/i);
 });
 
-test("authenticates the owner and persists validated administration settings", async () => {
-  const values = new Map();
-  const runtimeEnv = {
-    ADMIN_PASSWORD: "test-owner-password",
-    ADMIN_SESSION_SECRET: "test-session-secret-with-sufficient-length",
-    SITE_CONFIG: {
-      get: async (key) => values.has(key) ? JSON.parse(values.get(key)) : null,
-      put: async (key, value) => values.set(key, value),
-      delete: async (key) => values.delete(key),
-    },
-    ASSETS: { fetch: async () => new Response("Not found", { status: 404 }) },
-  };
+test("publishes only indexable production URLs in the sitemap", async () => {
+  const response = await render("/sitemap.xml");
+  const xml = await response.text();
 
-  const login = await fetchWorker(
+  assert.equal(response.status, 200);
+  assert.match(xml, /<loc>https:\/\/legservice\.ru\/?<\/loc>/);
+  assert.doesNotMatch(xml, /\.example|localhost|preview/i);
+  assert.match(xml, /<loc>https:\/\/legservice\.ru\/praktika<\/loc>/);
+  assert.doesNotMatch(xml, /\/politika<\/loc>|\/soglasie<\/loc>|\/upravlenie<\/loc>/);
+  for (const loc of xml.matchAll(/<loc>([^<]+)<\/loc>/g)) {
+    assert.ok(loc[1] === "https://legservice.ru" || loc[1].startsWith("https://legservice.ru/"));
+  }
+});
+
+test("requires configured PostgreSQL for administration", async () => {
+  const login = await fetchApp(
     "/api/admin/login",
     {
       method: "POST",
-      headers: { "content-type": "application/json", origin: "http://localhost" },
+      headers: { "content-type": "application/json", origin: baseUrl },
       body: JSON.stringify({ password: "test-owner-password" }),
     },
-    runtimeEnv,
   );
-  assert.equal(login.status, 200);
-  const cookie = login.headers.get("set-cookie").split(";", 1)[0];
-
-  const current = await fetchWorker("/api/admin/config", { headers: { cookie } }, runtimeEnv);
-  assert.equal(current.status, 200);
-  const { config } = await current.json();
-  config.experienceYears = "16+ лет";
-  config.bookingSlots = [{ date: "2030-05-12", time: "14:30" }];
-
-  const saved = await fetchWorker(
-    "/api/admin/config",
-    {
-      method: "PUT",
-      headers: { "content-type": "application/json", origin: "http://localhost", cookie },
-      body: JSON.stringify(config),
-    },
-    runtimeEnv,
-  );
-  assert.equal(saved.status, 200);
-  assert.equal(JSON.parse(values.get("public-site-config")).experienceYears, "16+ лет");
-  assert.deepEqual(JSON.parse(values.get("public-site-config")).bookingSlots, [{ date: "2030-05-12", time: "14:30" }]);
+  assert.equal(login.status, 503);
+  const health = await (await fetchApp("/api/health")).json();
+  assert.equal(health.storage, "unconfigured");
 });
 
 test("does not render the removed pre-launch note", async () => {
@@ -177,6 +179,7 @@ test("does not render the removed pre-launch note", async () => {
     const html = await response.text();
 
     assert.equal(response.status, 200);
+    assert.match(html, /<meta[^>]+name=["']robots["'][^>]+content=["'][^"']*noindex[^"']*follow[^"']*["']/i);
     assert.doesNotMatch(html, /Редакция от 29 июля 2026 года/);
     assert.doesNotMatch(html, /Перед публичным запуском документ рекомендуется проверить/);
   }

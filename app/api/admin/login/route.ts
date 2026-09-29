@@ -1,9 +1,7 @@
 import { adminConfigured, createSessionCookie, passwordMatches, requestClientKey, sameOrigin } from "../../../lib/admin-auth";
-import { workerBindings } from "../../../lib/site-config";
 import {
   clearDatabaseRateLimit,
   consumeDatabaseRateLimit,
-  databaseConfigured,
 } from "@runtime/database";
 
 export async function POST(request: Request) {
@@ -13,16 +11,8 @@ export async function POST(request: Request) {
   }
 
   const rateKey = `admin-login:${await requestClientKey(request)}`;
-  const kv = workerBindings().SITE_CONFIG;
-  if (databaseConfigured()) {
-    if (!(await consumeDatabaseRateLimit(rateKey, 10, 900))) {
-      return Response.json({ ok: false, error: "Слишком много попыток. Повторите позже" }, { status: 429 });
-    }
-  } else {
-    const attempts = Number((await kv!.get(rateKey, "json")) || 0);
-    if (attempts >= 10) {
-      return Response.json({ ok: false, error: "Слишком много попыток. Повторите позже" }, { status: 429 });
-    }
+  if (!(await consumeDatabaseRateLimit(rateKey, 10, 900))) {
+    return Response.json({ ok: false, error: "Слишком много попыток. Повторите позже" }, { status: 429 });
   }
 
   let password = "";
@@ -34,15 +24,10 @@ export async function POST(request: Request) {
   }
 
   if (!(await passwordMatches(password))) {
-    if (!databaseConfigured()) {
-      const attempts = Number((await kv!.get(rateKey, "json")) || 0);
-      await kv!.put(rateKey, JSON.stringify(attempts + 1), { expirationTtl: 900 });
-    }
     return Response.json({ ok: false, error: "Неверный пароль" }, { status: 401 });
   }
 
-  if (databaseConfigured()) await clearDatabaseRateLimit(rateKey);
-  else await kv!.delete(rateKey);
+  await clearDatabaseRateLimit(rateKey);
   return Response.json(
     { ok: true },
     { headers: { "set-cookie": await createSessionCookie(), "cache-control": "no-store" } },

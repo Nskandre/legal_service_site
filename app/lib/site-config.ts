@@ -1,4 +1,3 @@
-import { runtimeEnv as env } from "@runtime/environment";
 import { contacts, pricingItems, services } from "./content";
 import {
   databaseConfigured,
@@ -16,18 +15,6 @@ export type SiteConfig = {
   bookingSlots: BookingSlot[];
 };
 
-type KvBinding = {
-  get(key: string, type: "json"): Promise<unknown>;
-  put(key: string, value: string, options?: { expirationTtl?: number }): Promise<void>;
-  delete(key: string): Promise<void>;
-};
-
-export type WorkerBindings = {
-  SITE_CONFIG?: KvBinding;
-  ADMIN_PASSWORD?: string;
-  ADMIN_SESSION_SECRET?: string;
-};
-
 export const defaultSiteConfig: SiteConfig = {
   contacts,
   experienceYears: "15+ лет",
@@ -35,10 +22,6 @@ export const defaultSiteConfig: SiteConfig = {
   pricingPrices: Object.fromEntries(pricingItems.map((item) => [item.id, item.price])),
   bookingSlots: [],
 };
-
-export function workerBindings() {
-  return env as unknown as WorkerBindings;
-}
 
 function safeText(value: unknown, fallback: string, max = 240) {
   return typeof value === "string" && value.trim()
@@ -88,9 +71,7 @@ export async function getSiteConfig(): Promise<SiteConfig> {
     if (databaseConfigured()) {
       return normalizeSiteConfig(await getDatabaseConfig());
     }
-    const kv = workerBindings().SITE_CONFIG;
-    if (!kv) return defaultSiteConfig;
-    return normalizeSiteConfig(await kv.get("public-site-config", "json"));
+    return defaultSiteConfig;
   } catch {
     return defaultSiteConfig;
   }
@@ -98,13 +79,8 @@ export async function getSiteConfig(): Promise<SiteConfig> {
 
 export async function saveSiteConfig(value: unknown) {
   const normalized = normalizeSiteConfig(value);
-  if (databaseConfigured()) {
-    await saveDatabaseConfig(normalized);
-    return normalized;
-  }
-  const kv = workerBindings().SITE_CONFIG;
-  if (!kv) throw new Error("SITE_CONFIG binding is not configured");
-  await kv.put("public-site-config", JSON.stringify(normalized));
+  if (!databaseConfigured()) throw new Error("PostgreSQL is not configured");
+  await saveDatabaseConfig(normalized);
   return normalized;
 }
 

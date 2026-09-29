@@ -77,7 +77,9 @@ export default async function Home() {
           {/* A plain local image plus CSS background fallback is intentional for Android/Yandex compatibility. */}
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src="/hero-paper.png"
+            src="/hero-paper-1122.webp"
+            srcSet="/hero-paper-640.webp 640w, /hero-paper-1122.webp 1122w"
+            sizes="(max-width: 640px) 100vw, (max-width: 920px) 90vw, 44vw"
             alt="Композиция из фактурной бумаги и сургучной печати"
             width="1122"
             height="1402"

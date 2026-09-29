@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { Metrika } from "./components/Metrika";
+import { siteUrl } from "./lib/site-url";
 
 export const metadata: Metadata = {
-  metadataBase: new URL(
-    process.env.NEXT_PUBLIC_SITE_URL || "https://bychikhina-legal.example",
-  ),
+  metadataBase: new URL(siteUrl),
   title: {
-    default: "Юрист Евгения Бычихина — Москва, метро Академическая * онлайн по России",
+    default: "Юрист по гражданским делам в Москве — Евгения Бычихина",
     template: "%s — Евгения Бычихина",
   },
   description:
@@ -26,10 +26,24 @@ export const metadata: Metadata = {
     title: "Юрист Евгения Бычихина",
     description:
       "Юридическая стратегия для сложных жизненных и имущественных вопросов.",
+    url: "/",
+    images: [
+      {
+        url: "/og-legal-service.webp",
+        width: 1200,
+        height: 630,
+        alt: "Юридическая практика Евгении Бычихиной",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Юрист по гражданским делам в Москве — Евгения Бычихина",
+    description: "Юридическая стратегия для сложных жизненных и имущественных вопросов.",
+    images: ["/og-legal-service.webp"],
   },
   alternates: { canonical: "/" },
   other: {
-    "codex-preview": "development",
     "geo.region": "RU-MOW",
     "geo.placename": "Москва",
   },
@@ -46,7 +60,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ru">
-      <body>{children}</body>
+      <body>
+        {children}
+        <Metrika counterId={process.env.NEXT_PUBLIC_YANDEX_METRIKA_ID} />
+      </body>
     </html>
   );
 }

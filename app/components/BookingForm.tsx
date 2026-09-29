@@ -3,6 +3,7 @@
 import { FormEvent, useMemo, useState } from "react";
 import Link from "next/link";
 import type { SiteConfig } from "../lib/site-config";
+import { metrikaGoal } from "./Metrika";
 
 const noSlotsMessage = "Свободных слотов для записи пока нет, но вы всегда можете связаться со мной любым удобным для Вас способом и согласовать дату и время встречи.";
 
@@ -46,8 +47,10 @@ export function BookingForm({ config }: { config: SiteConfig }) {
     try {
       const response = await fetch("/api/lead", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(payload) });
       if (!response.ok) throw new Error("request failed");
+      metrikaGoal("booking_success", { method });
       setStatus("sent");
     } catch {
+      metrikaGoal("booking_error", { method });
       setStatus("error");
     }
   }

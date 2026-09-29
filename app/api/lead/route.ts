@@ -16,7 +16,7 @@ function clean(value: unknown, max = 2000) {
   return String(value || "").trim().slice(0, max);
 }
 
-async function cloudflareNotification() {
+async function directNotification() {
   const text = "На сайте получена новая заявка. Персональные данные в уведомление не включены.";
   const deliveries: Promise<Response>[] = [];
   if (process.env.TELEGRAM_BOT_TOKEN && process.env.TELEGRAM_CHAT_ID) {
@@ -57,7 +57,7 @@ export async function POST(request: Request) {
     return Response.json({ ok: false, error: "Заполните обязательные поля и подтвердите согласие" }, { status: 422 });
   }
   if (!databaseConfigured()) {
-    return (await cloudflareNotification())
+    return (await directNotification())
       ? Response.json({ ok: true })
       : Response.json({ ok: false, error: "Канал уведомлений не настроен" }, { status: 503 });
   }

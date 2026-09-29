@@ -18,7 +18,7 @@
 
 Источник production-кода — ветка `main` репозитория `Nskandre/legal_service_site`. Timeweb App Platform автоматически собирает и разворачивает новый commit из `main` через `Dockerfile`.
 
-Cloudflare Worker сохранён только как совместимый резервный runtime. Автоматическое обновление активного Cloudflare-размещения должно оставаться остановленным до отдельного прямого поручения владельца.
+Проект поддерживает один production-контур: Next.js в контейнере Timeweb. Резервные runtime и сборки для других платформ не используются.
 
 ## Локальная проверка
 
@@ -26,19 +26,12 @@ Cloudflare Worker сохранён только как совместимый р
 
 ```bash
 npm ci
-npm run build:timeweb
+npm run build
 npx tsc --noEmit
 npm run lint
 ```
 
-Резервную Cloudflare-сборку можно проверить локально без публикации:
-
-```bash
-npm run build
-node --test tests/rendered-html.test.mjs
-```
-
-Запрещено запускать `wrangler deploy` или иным способом обновлять Cloudflare без отдельного прямого решения владельца.
+После сборки интеграционную проверку HTML можно запустить командой `node --test tests/rendered-html.test.mjs`.
 
 ## Переменные Timeweb
 

@@ -1,10 +1,7 @@
 .git
 .github
 .next
-dist
 node_modules
-.sites-runtime
-.wrangler
 .env*
 !.env.example
 local_private

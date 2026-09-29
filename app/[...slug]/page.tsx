@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { OpenLeadButton, OrderButton } from "../components/Actions";
 import { LeadForm } from "../components/LeadForm";
 import { SiteShell } from "../components/SiteShell";
+import { caseCategories, practiceCases } from "../lib/cases";
 import { services, siteUrl } from "../lib/content";
 import { configuredPricing, configuredServices, getSiteConfig, type SiteConfig } from "../lib/site-config";
 
@@ -32,7 +33,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       openGraph: { title: service.title, description: service.lead, url: path },
     };
   }
-  const entries: Record<string, { title: string; description: string }> = {
+  const entries: Record<string, { title: string; description: string; noindex?: boolean }> = {
     "/ob-avtore": {
       title: "О юристе",
       description:
@@ -48,18 +49,30 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       description:
         "Связаться с юристом Евгенией Бычихиной: Москва, метро Академическая * онлайн по России.",
     },
+    "/praktika": {
+      title: "Практические юридические ситуации",
+      description:
+        "Типовые семейные, наследственные и имущественные ситуации: возможный порядок работы и важные правовые оговорки.",
+    },
     "/politika": {
       title: "Политика конфиденциальности",
       description: "Правила обработки персональных данных посетителей сайта.",
+      noindex: true,
     },
     "/soglasie": {
       title: "Согласие на обработку персональных данных",
       description: "Условия согласия посетителя сайта на обработку персональных данных.",
+      noindex: true,
     },
   };
   const entry = entries[path];
   return entry
-    ? { title: entry.title, description: entry.description, alternates: { canonical: path } }
+    ? {
+        title: entry.title,
+        description: entry.description,
+        alternates: { canonical: path },
+        robots: entry.noindex ? { index: false, follow: true } : undefined,
+      }
     : {};
 }
 
@@ -73,9 +86,103 @@ export default async function ContentPage({ params }: Props) {
   if (path === "/ob-avtore") return <AboutPage config={config} />;
   if (path === "/stoimost") return <PricingPage config={config} />;
   if (path === "/kontakty") return <ContactsPage config={config} />;
+  if (path === "/praktika") return <CasesPage config={config} />;
   if (path === "/politika") return <PolicyPage consent={false} config={config} />;
   if (path === "/soglasie") return <PolicyPage consent config={config} />;
   notFound();
+}
+
+function CasesPage({ config }: { config: SiteConfig }) {
+  return (
+    <SiteShell config={config}>
+      <section className="inner-hero cases-hero">
+        <Breadcrumbs current="Практические ситуации" />
+        <div className="inner-hero-grid">
+          <div>
+            <p className="eyebrow">Как может выглядеть работа</p>
+            <h1>Практические ситуации</h1>
+            <p className="inner-lead">
+              Девять типовых задач, с которыми обращаются в семейных,
+              наследственных и имущественных вопросах. Без обещаний заранее —
+              с понятным порядком анализа и важными ограничениями.
+            </p>
+          </div>
+          <aside className="service-summary cases-summary">
+            <span>Направления</span><b>3</b>
+            <span>Ситуации</span><b>9</b>
+            <small>Каждое дело индивидуально. Итог зависит от документов, фактов и позиции другой стороны.</small>
+          </aside>
+        </div>
+      </section>
+
+      <section className="section cases-overview" aria-labelledby="cases-overview-title">
+        <div className="section-heading">
+          <div>
+            <p className="eyebrow">Выберите тему</p>
+            <h2 id="cases-overview-title">Сначала — узнать свою ситуацию</h2>
+          </div>
+          <p>
+            Это не описания конкретных выигранных дел и не гарантия результата.
+            Материалы помогают понять возможный порядок действий до консультации.
+          </p>
+        </div>
+        <nav className="case-category-nav" aria-label="Разделы практических ситуаций">
+          {caseCategories.map((category) => (
+            <a key={category.id} href={`#${category.id}`}>{category.label}</a>
+          ))}
+        </nav>
+      </section>
+
+      {caseCategories.map((category) => {
+        const items = practiceCases.filter((item) => item.category === category.id);
+        return (
+          <section className="section case-category" id={category.id} key={category.id}>
+            <div className="case-category-heading">
+              <div>
+                <p className="eyebrow">{category.label}</p>
+                <h2>{category.title}</h2>
+              </div>
+              <p>{category.description}</p>
+            </div>
+            <div className="case-grid">
+              {items.map((item) => (
+                <article className="case-card" key={item.id}>
+                  <div className="case-card-topline">
+                    <span>{item.number}</span>
+                    <span>{category.label}</span>
+                  </div>
+                  <h3>{item.title}</h3>
+                  <dl>
+                    <div><dt>Ситуация</dt><dd>{item.situation}</dd></div>
+                    <div><dt>Подход</dt><dd>{item.approach}</dd></div>
+                    <div><dt>Важно</dt><dd>{item.important}</dd></div>
+                  </dl>
+                  <OpenLeadButton
+                    className="button--text"
+                    label="Обсудить похожую ситуацию"
+                    service={item.title}
+                  />
+                </article>
+              ))}
+            </div>
+          </section>
+        );
+      })}
+
+      <section className="section case-disclaimer">
+        <div>
+          <p className="eyebrow">Почему нет обещанного результата</p>
+          <h2>Правовая позиция начинается с документов</h2>
+        </div>
+        <p>
+          Даже внешне похожие ситуации отличаются сроками, составом имущества,
+          доказательствами и действиями участников. На первичном разборе можно
+          определить риски, недостающие документы и следующий практический шаг.
+        </p>
+        <OpenLeadButton label="Разобрать мою ситуацию" />
+      </section>
+    </SiteShell>
+  );
 }
 
 function Breadcrumbs({ current }: { current: string }) {
@@ -212,7 +319,7 @@ function AboutPage({ config }: { config: SiteConfig }) {
       <section className="section biography">
         <div className="paper-card">
           <p className="eyebrow">Образование</p>
-          <h3>РАНХиГС, юридический факультет</h3>
+          <h2 className="card-heading">РАНХиГС, юридический факультет</h2>
           <p>Гражданско-правовая специализация, квалификация «юрист», 2014 год.</p>
         </div>
         <div>
@@ -260,7 +367,7 @@ function PricingPage({ config }: { config: SiteConfig }) {
       <section className="section pricing-list">
         {items.map(({ id, title, text, price }) => (
           <article key={id}>
-            <div><h3>{title}</h3><p>{text}</p></div>
+            <div><h2 className="row-heading">{title}</h2><p>{text}</p></div>
             <b>{price}</b>
             <OrderButton service={title} />
           </article>

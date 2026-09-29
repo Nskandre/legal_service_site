@@ -6,8 +6,7 @@ export function GET() {
     "/ob-avtore",
     "/stoimost",
     "/kontakty",
-    "/politika",
-    "/soglasie",
+    "/praktika",
     ...services.map((service) => `/uslugi/${service.slug}`),
   ];
   const lastmod = new Date().toISOString().slice(0, 10);
@@ -25,6 +24,9 @@ ${paths
   .join("\n")}
 </urlset>`;
   return new Response(xml, {
-    headers: { "content-type": "application/xml; charset=utf-8" },
+    headers: {
+      "content-type": "application/xml; charset=utf-8",
+      "cache-control": "public, max-age=3600, s-maxage=86400, stale-while-revalidate=604800",
+    },
   });
 }

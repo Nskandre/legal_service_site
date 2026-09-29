@@ -4,6 +4,7 @@ import { FormEvent, useState } from "react";
 import Link from "next/link";
 import { contacts } from "../lib/content";
 import type { SiteConfig } from "../lib/site-config";
+import { metrikaGoal } from "./Metrika";
 
 type LeadFormProps = {
   service?: string;
@@ -27,9 +28,11 @@ export function LeadForm({ service = "Первичная консультаци�
         body: JSON.stringify(payload),
       });
       if (!response.ok) throw new Error("request failed");
+      metrikaGoal("lead_success", { service });
       setStatus("sent");
       event.currentTarget.reset();
     } catch {
+      metrikaGoal("lead_error", { service });
       setStatus("error");
     }
   }

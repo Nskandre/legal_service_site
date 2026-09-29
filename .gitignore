@@ -44,8 +44,5 @@ venv/
 
 # typescript
 next-env.d.ts
-/dist/
-/.wrangler/
-/.sites-runtime/
 /outputs/
 /work/

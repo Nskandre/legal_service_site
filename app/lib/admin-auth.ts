@@ -1,4 +1,3 @@
-import { workerBindings } from "./site-config";
 import { databaseConfigured } from "@runtime/database";
 
 const COOKIE_NAME = "legal_admin_session";
@@ -33,22 +32,21 @@ async function signature(expires: string, secret: string) {
 }
 
 export function adminConfigured() {
-  const bindings = workerBindings();
   return Boolean(
-    bindings.ADMIN_PASSWORD &&
-    bindings.ADMIN_SESSION_SECRET &&
-    (databaseConfigured() || bindings.SITE_CONFIG),
+    process.env.ADMIN_PASSWORD &&
+    process.env.ADMIN_SESSION_SECRET &&
+    databaseConfigured(),
   );
 }
 
 export async function passwordMatches(candidate: string) {
-  const expected = workerBindings().ADMIN_PASSWORD;
+  const expected = process.env.ADMIN_PASSWORD;
   if (!expected) return false;
   return constantTimeEqual(await digest(candidate), await digest(expected));
 }
 
 export async function createSessionCookie() {
-  const secret = workerBindings().ADMIN_SESSION_SECRET;
+  const secret = process.env.ADMIN_SESSION_SECRET;
   if (!secret) throw new Error("ADMIN_SESSION_SECRET is not configured");
   const expires = String(Math.floor(Date.now() / 1000) + SESSION_SECONDS);
   const token = `${expires}.${await signature(expires, secret)}`;
@@ -65,7 +63,7 @@ function cookieValue(request: Request) {
 }
 
 export async function isAdmin(request: Request) {
-  const secret = workerBindings().ADMIN_SESSION_SECRET;
+  const secret = process.env.ADMIN_SESSION_SECRET;
   const [expires, supplied] = cookieValue(request).split(".");
   if (!secret || !expires || !supplied || Number(expires) < Math.floor(Date.now() / 1000)) return false;
   const expected = await signature(expires, secret);
@@ -97,6 +95,6 @@ export function sameOrigin(request: Request) {
 
 export async function requestClientKey(request: Request) {
   const forwarded = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim();
-  const address = forwarded || request.headers.get("cf-connecting-ip") || "unknown";
+  const address = forwarded || "unknown";
   return bytesToBase64Url(await digest(address));
 }
