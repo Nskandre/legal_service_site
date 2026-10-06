@@ -37,11 +37,28 @@ async function deliver(item: PendingDelivery) {
   if (item.channel === "max") {
     const url = new URL("https://platform-api2.max.ru/messages");
     url.searchParams.set("chat_id", process.env.MAX_CHAT_ID || "");
-    return fetch(url, {
+    return requestWithRetry(() => fetch(url, {
       method: "POST",
       headers: { authorization: process.env.MAX_BOT_TOKEN || "", "content-type": "application/json" },
       body: JSON.stringify({ text }),
-    });
+    }));
+  }
+  if (item.channel === "email") {
+    return requestWithRetry(() => fetch("https://api.dashamail.com/v2/transactional/messages", {
+      method: "POST",
+      headers: {
+        authorization: "Bearer " + (process.env.DASHAMAIL_API_KEY || ""),
+        "content-type": "application/json",
+      },
+      body: JSON.stringify({
+        to: process.env.LEAD_NOTIFICATION_EMAIL,
+        from_email: process.env.EMAIL_FROM,
+        from_name: process.env.EMAIL_FROM_NAME || "Сайт legservice.ru",
+        subject: "Новая заявка №" + item.public_number,
+        plain_text: text,
+        message_id: `legservice-lead-${item.public_number}-delivery-${item.id}`,
+      }),
+    }));
   }
   return fetch(process.env.LEAD_WEBHOOK_URL || "", {
     method: "POST",

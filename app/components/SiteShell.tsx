@@ -33,6 +33,19 @@ export function SiteShell({ children, config }: { children: React.ReactNode; con
     };
   }, []);
 
+  useEffect(() => {
+    if (!dialogOpen && !bookingOpen) return;
+
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key !== "Escape") return;
+      setDialogOpen(false);
+      setBookingOpen(false);
+    };
+
+    window.addEventListener("keydown", closeOnEscape);
+    return () => window.removeEventListener("keydown", closeOnEscape);
+  }, [dialogOpen, bookingOpen]);
+
   return (
     <div className="site-shell">
       <a className="skip-link" href="#content">К содержанию</a>

@@ -10,7 +10,7 @@
 - адаптивное меню и формы для desktop, Android и iPhone;
 - закрытая страница `/upravlenie` для контактов, цен, стажа, расписания и журнала заявок;
 - PostgreSQL-журнал со статусами, заметками, поиском и необратимым обезличиванием;
-- короткие уведомления без персональных данных через Telegram, MAX и webhook при наличии настроек;
+- короткие уведомления без персональных данных через Telegram, DashaMail email, MAX и webhook при наличии настроек;
 - Schema.org, sitemap.xml, robots.txt и llms.txt;
 - клавиатурная доступность и поддержка `prefers-reduced-motion`.
 
@@ -47,10 +47,11 @@ npm run lint
 Каналы уведомлений включаются только полными парами настроек:
 
 - Telegram: `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID`;
+- DashaMail email: `DASHAMAIL_API_KEY`, `EMAIL_FROM`, `LEAD_NOTIFICATION_EMAIL`; необязательное имя отправителя — `EMAIL_FROM_NAME`;
 - MAX: `MAX_BOT_TOKEN`, `MAX_CHAT_ID`;
 - webhook: `LEAD_WEBHOOK_URL`, при необходимости `LEAD_WEBHOOK_TOKEN`.
 
-Email-уведомления отложены. Production-связка заявок: PostgreSQL, закрытый журнал /upravlenie и Telegram; старые email-задания сохраняются в истории, но повторно не обрабатываются.
+Production-связка заявок: PostgreSQL, закрытый журнал `/upravlenie`, Telegram и DashaMail email. MAX включается только после получения токена бота и числового `chat_id` или `user_id`; номер телефона получателя не заменяет этот идентификатор.
 
 ## Как обрабатывается заявка
 

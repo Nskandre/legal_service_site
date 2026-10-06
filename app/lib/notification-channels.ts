@@ -1,4 +1,4 @@
-export type ActiveDeliveryChannel = "telegram" | "max" | "webhook";
+export type ActiveDeliveryChannel = "telegram" | "max" | "email" | "webhook";
 
 export function configuredDeliveryChannels(
   env: Record<string, string | undefined> = process.env,
@@ -6,6 +6,7 @@ export function configuredDeliveryChannels(
   const channels: ActiveDeliveryChannel[] = [];
   if (env.TELEGRAM_BOT_TOKEN && env.TELEGRAM_CHAT_ID) channels.push("telegram");
   if (env.MAX_BOT_TOKEN && env.MAX_CHAT_ID) channels.push("max");
+  if (env.DASHAMAIL_API_KEY && env.EMAIL_FROM && env.LEAD_NOTIFICATION_EMAIL) channels.push("email");
   if (env.LEAD_WEBHOOK_URL) channels.push("webhook");
   return channels;
 }

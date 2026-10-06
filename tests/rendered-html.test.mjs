@@ -78,6 +78,8 @@ test("renders consistent services, work format and communication channels", asyn
   assert.match(home, /Записаться на консультацию/);
   assert.match(home, /15\+ лет/);
   assert.match(home, /опыт судебных процессов в районных и мировых судах города Москвы/);
+  assert.match(home, /name=["']contact["']/);
+  assert.match(home, /name=["']consent["']/);
   assert.match(
     home,
     /Информация на страницах сайта не является индивидуальной юридической консультацией и не содержит гарантии результата по делу\./,
