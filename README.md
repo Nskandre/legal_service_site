@@ -47,7 +47,7 @@ npm run lint
 Каналы уведомлений включаются только полными парами настроек:
 
 - Telegram: `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID`;
-- DashaMail email: `DASHAMAIL_API_KEY`, `EMAIL_FROM`, `LEAD_NOTIFICATION_EMAIL`; необязательное имя отправителя — `EMAIL_FROM_NAME`;
+- DashaMail email: `DASHAMAIL_API_KEY`, `EMAIL_FROM`, `LEAD_NOTIFICATION_EMAIL`; необязательное имя отправителя — `EMAIL_FROM_NAME`. Если API-переменные не заданы, используется полностью настроенная SMTP-группа `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`, `SMTP_USER`, `SMTP_PASSWORD`, `SMTP_FROM`;
 - MAX: `MAX_BOT_TOKEN`, `MAX_CHAT_ID`;
 - webhook: `LEAD_WEBHOOK_URL`, при необходимости `LEAD_WEBHOOK_TOKEN`.
 

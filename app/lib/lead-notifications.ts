@@ -7,6 +7,7 @@ import {
   type DeliveryChannel,
 } from "@runtime/database";
 import { configuredDeliveryChannels, requestWithRetry } from "./notification-channels";
+import { sendSmtpEmail } from "./smtp-email";
 
 type PendingDelivery = {
   id: number;
@@ -44,6 +45,28 @@ async function deliver(item: PendingDelivery) {
     }));
   }
   if (item.channel === "email") {
+    return sendEmailNotification({
+      subject: "Новая заявка №" + item.public_number,
+      text,
+      messageId: `legservice-lead-${item.public_number}-delivery-${item.id}`,
+    });
+  }
+  return fetch(process.env.LEAD_WEBHOOK_URL || "", {
+    method: "POST",
+    headers: {
+      "content-type": "application/json",
+      ...(process.env.LEAD_WEBHOOK_TOKEN ? { authorization: "Bearer " + process.env.LEAD_WEBHOOK_TOKEN } : {}),
+    },
+    body: JSON.stringify({ number: item.public_number, adminUrl: adminUrl() }),
+  });
+}
+
+export async function sendEmailNotification({ subject, text, messageId }: {
+  subject: string;
+  text: string;
+  messageId?: string;
+}) {
+  if (process.env.DASHAMAIL_API_KEY && process.env.EMAIL_FROM && process.env.LEAD_NOTIFICATION_EMAIL) {
     return requestWithRetry(() => fetch("https://api.dashamail.com/v2/transactional/messages", {
       method: "POST",
       headers: {
@@ -54,20 +77,13 @@ async function deliver(item: PendingDelivery) {
         to: process.env.LEAD_NOTIFICATION_EMAIL,
         from_email: process.env.EMAIL_FROM,
         from_name: process.env.EMAIL_FROM_NAME || "Сайт legservice.ru",
-        subject: "Новая заявка №" + item.public_number,
+        subject,
         plain_text: text,
-        message_id: `legservice-lead-${item.public_number}-delivery-${item.id}`,
+        message_id: messageId,
       }),
     }));
   }
-  return fetch(process.env.LEAD_WEBHOOK_URL || "", {
-    method: "POST",
-    headers: {
-      "content-type": "application/json",
-      ...(process.env.LEAD_WEBHOOK_TOKEN ? { authorization: "Bearer " + process.env.LEAD_WEBHOOK_TOKEN } : {}),
-    },
-    body: JSON.stringify({ number: item.public_number, adminUrl: adminUrl() }),
-  });
+  return sendSmtpEmail({ subject, text, messageId });
 }
 
 function deliveryErrorMessage(error: unknown) {

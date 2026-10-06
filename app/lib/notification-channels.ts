@@ -4,9 +4,13 @@ export function configuredDeliveryChannels(
   env: Record<string, string | undefined> = process.env,
 ): ActiveDeliveryChannel[] {
   const channels: ActiveDeliveryChannel[] = [];
+  const dashamailConfigured = Boolean(env.DASHAMAIL_API_KEY && env.EMAIL_FROM && env.LEAD_NOTIFICATION_EMAIL);
+  const smtpConfigured = Boolean(
+    env.SMTP_HOST && env.SMTP_PORT && env.SMTP_USER && env.SMTP_PASSWORD && env.SMTP_FROM && env.LEAD_NOTIFICATION_EMAIL,
+  );
   if (env.TELEGRAM_BOT_TOKEN && env.TELEGRAM_CHAT_ID) channels.push("telegram");
   if (env.MAX_BOT_TOKEN && env.MAX_CHAT_ID) channels.push("max");
-  if (env.DASHAMAIL_API_KEY && env.EMAIL_FROM && env.LEAD_NOTIFICATION_EMAIL) channels.push("email");
+  if (dashamailConfigured || smtpConfigured) channels.push("email");
   if (env.LEAD_WEBHOOK_URL) channels.push("webhook");
   return channels;
 }

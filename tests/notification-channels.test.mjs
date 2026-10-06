@@ -6,6 +6,7 @@ import { configuredDeliveryChannels, requestWithRetry } from "../app/lib/notific
 const notificationSource = await readFile(new URL("../app/lib/lead-notifications.ts", import.meta.url), "utf8");
 const leadFormSource = await readFile(new URL("../app/components/LeadForm.tsx", import.meta.url), "utf8");
 const siteShellSource = await readFile(new URL("../app/components/SiteShell.tsx", import.meta.url), "utf8");
+const smtpSource = await readFile(new URL("../app/lib/smtp-email.ts", import.meta.url), "utf8");
 
 test("uses Telegram when both credentials are configured", () => {
   assert.deepEqual(configuredDeliveryChannels({
@@ -32,6 +33,15 @@ test("uses DashaMail email only when all required settings are configured", () =
     DASHAMAIL_API_KEY: "test-key",
     LEAD_NOTIFICATION_EMAIL: "owner@example.test",
   }), []);
+
+  assert.deepEqual(configuredDeliveryChannels({
+    SMTP_HOST: "smtp.example.test",
+    SMTP_PORT: "465",
+    SMTP_USER: "sender@example.test",
+    SMTP_PASSWORD: "test-password",
+    SMTP_FROM: "sender@example.test",
+    LEAD_NOTIFICATION_EMAIL: "owner@example.test",
+  }), ["email"]);
 });
 
 test("keeps MAX and webhook available when fully configured", () => {
@@ -62,6 +72,13 @@ test("closes lead and booking dialogs with Escape", () => {
   assert.match(siteShellSource, /setDialogOpen\(false\)/);
   assert.match(siteShellSource, /setBookingOpen\(false\)/);
   assert.match(siteShellSource, /window\.addEventListener\("keydown", closeOnEscape\)/);
+});
+
+test("SMTP fallback requires TLS and keeps the message privacy-safe", () => {
+  assert.match(smtpSource, /STARTTLS/);
+  assert.match(smtpSource, /tls\.connect/);
+  assert.match(smtpSource, /Content-Transfer-Encoding: base64/);
+  assert.doesNotMatch(smtpSource, /item\.(name|contact|message)/);
 });
 
 test("retries transient network failures", async () => {

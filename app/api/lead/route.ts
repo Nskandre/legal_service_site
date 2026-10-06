@@ -1,7 +1,8 @@
 import { after } from "next/server";
 import { requestClientKey } from "../../lib/admin-auth";
+import { configuredDeliveryChannels } from "../../lib/notification-channels";
 import { consumeDatabaseRateLimit, createLead, databaseConfigured } from "@runtime/database";
-import { enqueueLeadNotifications, flushPendingNotifications } from "../../lib/lead-notifications";
+import { enqueueLeadNotifications, flushPendingNotifications, sendEmailNotification } from "../../lib/lead-notifications";
 
 type Lead = {
   name?: string;
@@ -35,21 +36,8 @@ async function directNotification() {
       body: JSON.stringify({ text }),
     }));
   }
-  if (process.env.DASHAMAIL_API_KEY && process.env.EMAIL_FROM && process.env.LEAD_NOTIFICATION_EMAIL) {
-    deliveries.push(fetch("https://api.dashamail.com/v2/transactional/messages", {
-      method: "POST",
-      headers: {
-        authorization: "Bearer " + process.env.DASHAMAIL_API_KEY,
-        "content-type": "application/json",
-      },
-      body: JSON.stringify({
-        to: process.env.LEAD_NOTIFICATION_EMAIL,
-        from_email: process.env.EMAIL_FROM,
-        from_name: process.env.EMAIL_FROM_NAME || "Сайт legservice.ru",
-        subject: "Новая заявка с сайта",
-        plain_text: text,
-      }),
-    }));
+  if (configuredDeliveryChannels().includes("email")) {
+    deliveries.push(sendEmailNotification({ subject: "Новая заявка с сайта", text }));
   }
   if (process.env.LEAD_WEBHOOK_URL) {
     deliveries.push(fetch(process.env.LEAD_WEBHOOK_URL, {
