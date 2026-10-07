@@ -16,6 +16,7 @@ export function SiteShell({ children, config }: { children: React.ReactNode; con
   const [bookingOpen, setBookingOpen] = useState(false);
   const [phoneOpen, setPhoneOpen] = useState(false);
   const [headerContact, setHeaderContact] = useState<"phone" | "email" | null>(null);
+  const [showScrollCue, setShowScrollCue] = useState(false);
 
   useEffect(() => {
     const open = (event: Event) => {
@@ -45,6 +46,29 @@ export function SiteShell({ children, config }: { children: React.ReactNode; con
     window.addEventListener("keydown", closeOnEscape);
     return () => window.removeEventListener("keydown", closeOnEscape);
   }, [dialogOpen, bookingOpen]);
+
+  useEffect(() => {
+    const updateScrollCue = () => {
+      const remaining = document.documentElement.scrollHeight - window.innerHeight - window.scrollY;
+      setShowScrollCue(remaining > 40);
+    };
+
+    updateScrollCue();
+    window.addEventListener("scroll", updateScrollCue, { passive: true });
+    window.addEventListener("resize", updateScrollCue);
+    return () => {
+      window.removeEventListener("scroll", updateScrollCue);
+      window.removeEventListener("resize", updateScrollCue);
+    };
+  }, []);
+
+  const scrollForward = () => {
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    window.scrollBy({
+      top: Math.max(window.innerHeight * 0.72, 320),
+      behavior: reduceMotion ? "auto" : "smooth",
+    });
+  };
 
   return (
     <div className="site-shell">
@@ -150,6 +174,18 @@ export function SiteShell({ children, config }: { children: React.ReactNode; con
         <a className="messenger messenger--max" href={contacts.max} target="_blank" rel="noreferrer" aria-label="Написать в MAX">M</a>
         <a className="messenger messenger--telegram" href={contacts.telegram} target="_blank" rel="noreferrer" aria-label="Написать в Telegram">T</a>
       </div>
+
+      <button
+        className={`scroll-cue ${showScrollCue ? "is-visible" : ""}`}
+        type="button"
+        aria-label="Показать следующую часть страницы"
+        aria-hidden={!showScrollCue}
+        tabIndex={showScrollCue ? 0 : -1}
+        onClick={scrollForward}
+      >
+        <span>Ещё ниже</span>
+        <i aria-hidden="true" />
+      </button>
 
       {dialogOpen && (
         <div className="dialog-backdrop" role="presentation" onMouseDown={() => setDialogOpen(false)}>

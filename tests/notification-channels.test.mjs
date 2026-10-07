@@ -8,6 +8,7 @@ const leadFormSource = await readFile(new URL("../app/components/LeadForm.tsx", 
 const siteShellSource = await readFile(new URL("../app/components/SiteShell.tsx", import.meta.url), "utf8");
 const smtpSource = await readFile(new URL("../app/lib/smtp-email.ts", import.meta.url), "utf8");
 const leadApiSource = await readFile(new URL("../app/api/lead/route.ts", import.meta.url), "utf8");
+const globalStyles = await readFile(new URL("../app/globals.css", import.meta.url), "utf8");
 
 test("uses Telegram when both credentials are configured", () => {
   assert.deepEqual(configuredDeliveryChannels({
@@ -80,6 +81,16 @@ test("closes lead and booking dialogs with Escape", () => {
   assert.match(siteShellSource, /setDialogOpen\(false\)/);
   assert.match(siteShellSource, /setBookingOpen\(false\)/);
   assert.match(siteShellSource, /window\.addEventListener\("keydown", closeOnEscape\)/);
+});
+
+test("shows an accessible scroll cue until the page bottom and aligns the mobile phone", () => {
+  assert.match(siteShellSource, /remaining > 40/);
+  assert.match(siteShellSource, /window\.addEventListener\("scroll", updateScrollCue/);
+  assert.match(siteShellSource, /window\.scrollBy\(\{/);
+  assert.match(siteShellSource, /aria-label="Показать следующую часть страницы"/);
+  assert.match(siteShellSource, /tabIndex=\{showScrollCue \? 0 : -1\}/);
+  assert.match(globalStyles, /\.header-contacts button:first-child\s*\{\s*text-align: left;/);
+  assert.match(globalStyles, /\.scroll-cue\.is-visible/);
 });
 
 test("SMTP fallback requires TLS and transports the prepared email body", () => {
