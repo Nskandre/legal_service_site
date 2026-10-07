@@ -2,7 +2,12 @@ import { after } from "next/server";
 import { requestClientKey } from "../../lib/admin-auth";
 import { configuredDeliveryChannels } from "../../lib/notification-channels";
 import { consumeDatabaseRateLimit, createLead, databaseConfigured } from "@runtime/database";
-import { enqueueLeadNotifications, flushPendingNotifications, sendEmailNotification } from "../../lib/lead-notifications";
+import {
+  enqueueLeadNotifications,
+  flushPendingNotifications,
+  formatLeadEmailText,
+  sendEmailNotification,
+} from "../../lib/lead-notifications";
 
 type Lead = {
   name?: string;
@@ -17,7 +22,13 @@ function clean(value: unknown, max = 2000) {
   return String(value || "").trim().slice(0, max);
 }
 
-async function directNotification() {
+async function directNotification(lead: {
+  name: string;
+  contact: string;
+  message: string;
+  service: string;
+  source: string;
+}) {
   const text = "На сайте получена новая заявка. Персональные данные в уведомление не включены.";
   const deliveries: Promise<Response>[] = [];
   if (process.env.TELEGRAM_BOT_TOKEN && process.env.TELEGRAM_CHAT_ID) {
@@ -37,7 +48,14 @@ async function directNotification() {
     }));
   }
   if (configuredDeliveryChannels().includes("email")) {
-    deliveries.push(sendEmailNotification({ subject: "Новая заявка с сайта", text }));
+    deliveries.push(sendEmailNotification({
+      subject: "Новая заявка с сайта",
+      text: formatLeadEmailText({
+        public_number: "без номера",
+        created_at: new Date().toISOString(),
+        ...lead,
+      }),
+    }));
   }
   if (process.env.LEAD_WEBHOOK_URL) {
     deliveries.push(fetch(process.env.LEAD_WEBHOOK_URL, {
@@ -66,11 +84,12 @@ export async function POST(request: Request) {
   const contact = clean(body.contact, 180);
   const message = clean(body.message || "Не указано");
   const service = clean(body.service || "Первичная консультация", 180);
+  const source = service === "Запись на консультацию" ? "booking" : "website";
   if (!name || !contact || body.consent !== "yes") {
     return Response.json({ ok: false, error: "Заполните обязательные поля и подтвердите согласие" }, { status: 422 });
   }
   if (!databaseConfigured()) {
-    return (await directNotification())
+    return (await directNotification({ name, contact, message, service, source }))
       ? Response.json({ ok: true })
       : Response.json({ ok: false, error: "Канал уведомлений не настроен" }, { status: 503 });
   }
@@ -85,7 +104,7 @@ export async function POST(request: Request) {
       contact,
       message,
       service,
-      source: service === "Запись на консультацию" ? "booking" : "website",
+      source,
       ipHash: clientKey,
     });
   } catch {

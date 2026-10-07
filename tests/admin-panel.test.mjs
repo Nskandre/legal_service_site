@@ -54,3 +54,10 @@ test("restricts manual notification retry to authenticated D-013 test leads", ()
   assert.match(leadsRouteSource, /isAdmin\(request\)/);
   assert.match(leadsRouteSource, /retryTestDeliveries\(channels\)/);
 });
+
+test("retries only delivery rows that are still pending or failed", () => {
+  assert.match(databaseSource, /WHERE o\.status IN \('pending', 'failed'\)/);
+  assert.match(databaseSource, /AND o\.status = 'failed'/);
+  assert.equal((databaseSource.match(/AND status IN \('pending', 'failed'\)/g) || []).length, 2);
+  assert.match(databaseSource, /l\.name, l\.contact, l\.message, l\.service, l\.source, l\.created_at/);
+});

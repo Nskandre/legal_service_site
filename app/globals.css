@@ -727,6 +727,34 @@ textarea:focus-visible {
   text-decoration: underline;
 }
 
+.lead-success {
+  display: grid;
+  gap: 8px;
+  min-height: 180px;
+  place-content: center;
+  padding: 28px;
+  border: 1px solid rgba(91, 39, 43, 0.18);
+  border-radius: 16px;
+  background: rgba(255, 253, 249, 0.68);
+  text-align: center;
+}
+
+.lead-success strong {
+  color: var(--burgundy);
+  font-family: var(--font-serif);
+  font-size: clamp(1.35rem, 3vw, 1.8rem);
+  font-weight: 500;
+}
+
+.lead-success p {
+  margin: 0;
+  color: var(--taupe);
+}
+
+.lead-success--compact {
+  min-height: 132px;
+}
+
 .honeypot {
   position: absolute !important;
   left: -10000px !important;

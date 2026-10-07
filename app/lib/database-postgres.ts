@@ -198,7 +198,8 @@ export async function queueDelivery(leadId: string, channel: DeliveryChannel) {
 export async function pendingDeliveries(channels: DeliveryChannel[], limit = 20) {
   if (!channels.length) return [];
   return sql()`
-    SELECT o.id, o.lead_id, o.channel, o.attempts, l.public_number
+    SELECT o.id, o.lead_id, o.channel, o.attempts,
+           l.public_number, l.name, l.contact, l.message, l.service, l.source, l.created_at
     FROM delivery_outbox o
     JOIN leads l ON l.id = o.lead_id
     WHERE o.status IN ('pending', 'failed')
@@ -233,6 +234,7 @@ export async function markDeliverySent(id: number) {
     SET status = 'sent', attempts = attempts + 1, sent_at = now(),
         last_error = NULL, updated_at = now()
     WHERE id = ${id}
+      AND status IN ('pending', 'failed')
   `;
 }
 
@@ -244,6 +246,7 @@ export async function markDeliveryFailed(id: number, attempts: number, error: st
         next_attempt_at = now() + (${delaySeconds} * interval '1 second'),
         last_error = ${error.slice(0, 1000)}, updated_at = now()
     WHERE id = ${id}
+      AND status IN ('pending', 'failed')
   `;
 }
 

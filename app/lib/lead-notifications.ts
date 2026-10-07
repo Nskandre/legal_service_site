@@ -14,7 +14,17 @@ type PendingDelivery = {
   channel: DeliveryChannel;
   attempts: number;
   public_number: string;
+  name: string;
+  contact: string;
+  message: string;
+  service: string;
+  source: string;
+  created_at: string;
 };
+
+export type LeadEmailDetails = Pick<PendingDelivery,
+  "public_number" | "name" | "contact" | "message" | "service" | "source" | "created_at"
+>;
 
 export async function enqueueLeadNotifications(leadId: string) {
   for (const channel of configuredDeliveryChannels()) await queueDelivery(leadId, channel);
@@ -23,6 +33,30 @@ export async function enqueueLeadNotifications(leadId: string) {
 function adminUrl() {
   const base = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") || "";
   return base ? base + "/upravlenie" : "/upravlenie";
+}
+
+export function formatLeadEmailText(lead: LeadEmailDetails) {
+  const createdAt = new Date(lead.created_at);
+  const createdLabel = Number.isNaN(createdAt.getTime())
+    ? lead.created_at
+    : new Intl.DateTimeFormat("ru-RU", {
+      dateStyle: "long",
+      timeStyle: "short",
+      timeZone: "Europe/Moscow",
+    }).format(createdAt) + " МСК";
+  return [
+    "Новая заявка №" + lead.public_number,
+    "Дата: " + createdLabel,
+    "Услуга: " + lead.service,
+    "Источник: " + (lead.source === "booking" ? "Запись на консультацию" : "Форма сайта"),
+    "Имя: " + lead.name,
+    "Контакт: " + lead.contact,
+    "",
+    "Сообщение:",
+    lead.message || "Не указано",
+    "",
+    "Защищённый журнал: " + adminUrl(),
+  ].join("\n");
 }
 
 async function deliver(item: PendingDelivery) {
@@ -47,7 +81,7 @@ async function deliver(item: PendingDelivery) {
   if (item.channel === "email") {
     return sendEmailNotification({
       subject: "Новая заявка №" + item.public_number,
-      text,
+      text: formatLeadEmailText(item),
       messageId: `legservice-lead-${item.public_number}-delivery-${item.id}`,
     });
   }

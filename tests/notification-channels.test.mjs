@@ -7,6 +7,7 @@ const notificationSource = await readFile(new URL("../app/lib/lead-notifications
 const leadFormSource = await readFile(new URL("../app/components/LeadForm.tsx", import.meta.url), "utf8");
 const siteShellSource = await readFile(new URL("../app/components/SiteShell.tsx", import.meta.url), "utf8");
 const smtpSource = await readFile(new URL("../app/lib/smtp-email.ts", import.meta.url), "utf8");
+const leadApiSource = await readFile(new URL("../app/api/lead/route.ts", import.meta.url), "utf8");
 
 test("uses Telegram when both credentials are configured", () => {
   assert.deepEqual(configuredDeliveryChannels({
@@ -52,19 +53,26 @@ test("keeps MAX and webhook available when fully configured", () => {
   }), ["max", "webhook"]);
 });
 
-test("sends privacy-safe DashaMail notifications with a stable message id", () => {
+test("sends the complete lead by email with a stable message id", () => {
   assert.match(notificationSource, /api\.dashamail\.com\/v2\/transactional\/messages/);
   assert.match(notificationSource, /LEAD_NOTIFICATION_EMAIL/);
   assert.match(notificationSource, /EMAIL_FROM/);
   assert.match(notificationSource, /legservice-lead-\$\{item\.public_number\}-delivery-\$\{item\.id\}/);
-  assert.doesNotMatch(notificationSource, /item\.(name|contact|message)/);
+  for (const field of ["lead.name", "lead.contact", "lead.message", "lead.service", "lead.source"]) {
+    assert.match(notificationSource, new RegExp(field.replace(".", "\\.")));
+  }
+  assert.match(notificationSource, /text: formatLeadEmailText\(item\)/);
+  assert.match(leadApiSource, /text: formatLeadEmailText\(\{/);
+  assert.match(notificationSource, /body: JSON\.stringify\(\{ chat_id: process\.env\.TELEGRAM_CHAT_ID, text,/);
 });
 
-test("keeps a stable form reference across the asynchronous submission", () => {
+test("replaces every shared lead form with a success message after submission", () => {
   assert.match(leadFormSource, /const formElement = event\.currentTarget/);
   assert.match(leadFormSource, /new FormData\(formElement\)/);
-  assert.match(leadFormSource, /formElement\.reset\(\)/);
-  assert.doesNotMatch(leadFormSource, /event\.currentTarget\.reset\(\)/);
+  assert.match(leadFormSource, /if \(status === "sent"\)/);
+  assert.match(leadFormSource, /className=\{`lead-success/);
+  assert.match(leadFormSource, /role="status" aria-live="polite"/);
+  assert.doesNotMatch(leadFormSource, /\.reset\(\)/);
 });
 
 test("closes lead and booking dialogs with Escape", () => {
@@ -74,11 +82,10 @@ test("closes lead and booking dialogs with Escape", () => {
   assert.match(siteShellSource, /window\.addEventListener\("keydown", closeOnEscape\)/);
 });
 
-test("SMTP fallback requires TLS and keeps the message privacy-safe", () => {
+test("SMTP fallback requires TLS and transports the prepared email body", () => {
   assert.match(smtpSource, /STARTTLS/);
   assert.match(smtpSource, /tls\.connect/);
   assert.match(smtpSource, /Content-Transfer-Encoding: base64/);
-  assert.doesNotMatch(smtpSource, /item\.(name|contact|message)/);
 });
 
 test("retries transient network failures", async () => {

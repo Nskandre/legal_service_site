@@ -31,11 +31,19 @@ export function LeadForm({ service = "Первичная консультаци�
       if (!response.ok) throw new Error("request failed");
       metrikaGoal("lead_success", { service });
       setStatus("sent");
-      formElement.reset();
     } catch {
       metrikaGoal("lead_error", { service });
       setStatus("error");
     }
+  }
+
+  if (status === "sent") {
+    return (
+      <div className={`lead-success ${compact ? "lead-success--compact" : ""}`} role="status" aria-live="polite">
+        <strong>Заявка отправлена</strong>
+        <p>Я свяжусь с вами в ближайшее рабочее время.</p>
+      </div>
+    );
   }
 
   return (
@@ -82,8 +90,6 @@ export function LeadForm({ service = "Первичная консультаци�
         {status === "sending" ? "Отправляем…" : submitLabel}
       </button>
       <p className="form-note" aria-live="polite">
-        {status === "sent" &&
-          "Заявка отправлена. Я свяжусь с вами в ближайшее рабочее время."}
         {status === "error" && (
           <>
             Не удалось отправить форму. Напишите на{" "}
