@@ -1639,7 +1639,7 @@ textarea:focus-visible {
   top: 12px;
   z-index: 30;
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   max-width: 1180px;
   margin: 0 auto 22px;
   padding: 8px;
@@ -1670,6 +1670,7 @@ textarea:focus-visible {
   outline: none;
 }
 
+#admin-economics,
 #admin-leads,
 #admin-contacts,
 #admin-pricing,
@@ -1712,9 +1713,89 @@ textarea:focus-visible {
   margin-top: 30px;
 }
 
+.admin-economics,
 .admin-leads {
   max-width: 1180px;
   margin: 0 auto 22px;
+}
+
+.admin-week {
+  min-width: 210px;
+}
+
+.admin-metrics {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin: 24px 0;
+}
+
+.admin-metrics div {
+  display: grid;
+  gap: 5px;
+  padding: 15px;
+  border: 1px solid var(--hairline);
+  border-radius: 12px;
+  background: #fff;
+}
+
+.admin-metrics span,
+.admin-help {
+  color: var(--taupe);
+  font-size: 0.82rem;
+}
+
+.admin-metrics strong {
+  font-size: 1.16rem;
+}
+
+.admin-economics-table-wrap {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+  margin-bottom: 20px;
+}
+
+.admin-economics-table {
+  width: 100%;
+  min-width: 940px;
+  border-collapse: collapse;
+  font-size: 0.84rem;
+}
+
+.admin-economics-table th,
+.admin-economics-table td {
+  padding: 10px;
+  border-bottom: 1px solid var(--hairline);
+  text-align: right;
+  white-space: nowrap;
+}
+
+.admin-economics-table th:first-child,
+.admin-economics-table td:first-child {
+  position: sticky;
+  left: 0;
+  text-align: left;
+  background: var(--paper);
+}
+
+.admin-cost-form {
+  display: grid;
+  grid-template-columns: minmax(180px, 1fr) minmax(180px, 1fr) auto;
+  gap: 14px;
+  align-items: end;
+}
+
+.admin-help {
+  margin: 12px 0 0;
+}
+
+.admin-lead-qualification {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  padding: 16px 0;
+  border-top: 1px solid var(--hairline);
 }
 
 .admin-card-heading,
@@ -1816,6 +1897,12 @@ textarea:focus-visible {
   color: var(--taupe);
   font-size: 0.78rem;
   font-weight: 600;
+}
+
+.admin-lead-attribution {
+  border-top: 1px solid var(--hairline);
+  padding-top: 16px;
+  overflow-wrap: anywhere;
 }
 
 .admin-deliveries {
@@ -2384,6 +2471,28 @@ textarea:focus-visible {
     align-items: end;
   }
 
+  .admin-shell {
+    overflow-x: hidden;
+  }
+
+  .admin-heading,
+  .admin-card,
+  .admin-card-heading > *,
+  .admin-economics,
+  .admin-leads {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .admin-heading h1 {
+    font-size: clamp(2.25rem, 10.5vw, 3rem);
+    overflow-wrap: anywhere;
+  }
+
+  .admin-card {
+    padding: 22px;
+  }
+
   .admin-heading,
   .admin-heading-actions,
   .admin-savebar {
@@ -2395,12 +2504,22 @@ textarea:focus-visible {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
+  .admin-metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .admin-week {
+    width: 100%;
+  }
+
   .admin-grid,
   .admin-price-list,
   .admin-slot-add,
   .admin-lead-filters,
   .admin-lead-details,
-  .admin-lead-actions {
+  .admin-lead-actions,
+  .admin-lead-qualification,
+  .admin-cost-form {
     grid-template-columns: 1fr;
   }
 

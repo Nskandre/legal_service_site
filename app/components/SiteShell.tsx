@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { nav, services } from "../lib/content";
+import { captureLeadAttribution } from "../lib/lead-attribution";
 import type { SiteConfig } from "../lib/site-config";
 import { BookingForm } from "./BookingForm";
 import { LeadForm } from "./LeadForm";
@@ -17,6 +18,10 @@ export function SiteShell({ children, config }: { children: React.ReactNode; con
   const [phoneOpen, setPhoneOpen] = useState(false);
   const [headerContact, setHeaderContact] = useState<"phone" | "email" | null>(null);
   const [showScrollCue, setShowScrollCue] = useState(false);
+
+  useEffect(() => {
+    captureLeadAttribution();
+  }, []);
 
   useEffect(() => {
     const open = (event: Event) => {

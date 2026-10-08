@@ -2,6 +2,7 @@ import { after } from "next/server";
 import { isAdmin, sameOrigin } from "../../../lib/admin-auth";
 import { configuredDeliveryChannels } from "../../../lib/notification-channels";
 import { flushPendingNotifications } from "../../../lib/lead-notifications";
+import type { ConsultationStatus, ContractStatus, LeadQualification } from "../../../lib/lead-economics";
 import {
   anonymizeExpiredLeads,
   anonymizeLead,
@@ -15,6 +16,9 @@ import {
 
 const noStore = { "cache-control": "no-store" };
 const statuses = new Set<LeadStatus>(["new", "in_progress", "done", "declined"]);
+const qualifications = new Set<LeadQualification>(["unreviewed", "target", "non_target"]);
+const consultationStatuses = new Set<ConsultationStatus>(["unreviewed", "held", "not_held"]);
+const contractStatuses = new Set<ContractStatus>(["unreviewed", "signed", "not_signed"]);
 
 export async function GET(request: Request) {
   if (!(await isAdmin(request))) return Response.json({ ok: false }, { status: 401, headers: noStore });
@@ -37,6 +41,10 @@ export async function PATCH(request: Request) {
     id?: unknown;
     status?: unknown;
     notes?: unknown;
+    qualification?: unknown;
+    consultationStatus?: unknown;
+    contractStatus?: unknown;
+    revenueRub?: unknown;
     action?: unknown;
   };
   const id = typeof body.id === "string" ? body.id : "";
@@ -47,11 +55,25 @@ export async function PATCH(request: Request) {
   if (typeof body.status !== "string" || !statuses.has(body.status as LeadStatus)) {
     return Response.json({ ok: false }, { status: 422, headers: noStore });
   }
-  const lead = await updateLead(
+  if (typeof body.qualification !== "string" || !qualifications.has(body.qualification as LeadQualification)
+    || typeof body.consultationStatus !== "string"
+    || !consultationStatuses.has(body.consultationStatus as ConsultationStatus)
+    || typeof body.contractStatus !== "string"
+    || !contractStatuses.has(body.contractStatus as ContractStatus)
+    || typeof body.revenueRub !== "number" || !Number.isFinite(body.revenueRub)
+    || body.revenueRub < 0 || body.revenueRub > 100_000_000
+    || Math.abs(Math.round(body.revenueRub * 100) - body.revenueRub * 100) > 1e-7) {
+    return Response.json({ ok: false }, { status: 422, headers: noStore });
+  }
+  const lead = await updateLead({
     id,
-    body.status as LeadStatus,
-    typeof body.notes === "string" ? body.notes : "",
-  );
+    status: body.status as LeadStatus,
+    notes: typeof body.notes === "string" ? body.notes : "",
+    qualification: body.qualification as LeadQualification,
+    consultationStatus: body.consultationStatus as ConsultationStatus,
+    contractStatus: body.contractStatus as ContractStatus,
+    revenueRub: body.revenueRub,
+  });
   return lead
     ? Response.json({ ok: true, lead }, { headers: noStore })
     : Response.json({ ok: false }, { status: 404, headers: noStore });

@@ -16,10 +16,40 @@ type Lead = {
   service?: string;
   consent?: string;
   website?: string;
+  landingPage?: string;
+  referrer?: string;
+  utmSource?: string;
+  utmMedium?: string;
+  utmCampaign?: string;
+  utmContent?: string;
+  utmTerm?: string;
 };
 
 function clean(value: unknown, max = 2000) {
   return String(value || "").trim().slice(0, max);
+}
+
+function cleanAttribution(value: unknown, max = 180) {
+  return clean(value, max).replace(/[\u0000-\u001f\u007f]/g, " ").trim();
+}
+
+function cleanLandingPage(value: unknown) {
+  const path = cleanAttribution(value, 500);
+  if (!path.startsWith("/") || path.startsWith("//")) return "";
+  return path.split(/[?#]/, 1)[0];
+}
+
+function cleanReferrer(value: unknown, siteOrigin: string) {
+  const raw = cleanAttribution(value, 500);
+  if (!raw) return "";
+  if (raw.startsWith("/") && !raw.startsWith("//")) return raw.split(/[?#]/, 1)[0];
+  try {
+    const url = new URL(raw);
+    if (url.protocol !== "http:" && url.protocol !== "https:") return "";
+    return url.origin === siteOrigin ? url.pathname : url.origin;
+  } catch {
+    return "";
+  }
 }
 
 async function directNotification(lead: {
@@ -28,6 +58,13 @@ async function directNotification(lead: {
   message: string;
   service: string;
   source: string;
+  landing_page: string;
+  referrer: string;
+  utm_source: string;
+  utm_medium: string;
+  utm_campaign: string;
+  utm_content: string;
+  utm_term: string;
 }) {
   const text = "На сайте получена новая заявка. Персональные данные в уведомление не включены.";
   const deliveries: Promise<Response>[] = [];
@@ -85,11 +122,20 @@ export async function POST(request: Request) {
   const message = clean(body.message || "Не указано");
   const service = clean(body.service || "Первичная консультация", 180);
   const source = service === "Запись на консультацию" ? "booking" : "website";
+  const attribution = {
+    landing_page: cleanLandingPage(body.landingPage),
+    referrer: cleanReferrer(body.referrer, new URL(request.url).origin),
+    utm_source: cleanAttribution(body.utmSource),
+    utm_medium: cleanAttribution(body.utmMedium),
+    utm_campaign: cleanAttribution(body.utmCampaign),
+    utm_content: cleanAttribution(body.utmContent),
+    utm_term: cleanAttribution(body.utmTerm),
+  };
   if (!name || !contact || body.consent !== "yes") {
     return Response.json({ ok: false, error: "Заполните обязательные поля и подтвердите согласие" }, { status: 422 });
   }
   if (!databaseConfigured()) {
-    return (await directNotification({ name, contact, message, service, source }))
+    return (await directNotification({ name, contact, message, service, source, ...attribution }))
       ? Response.json({ ok: true })
       : Response.json({ ok: false, error: "Канал уведомлений не настроен" }, { status: 503 });
   }
@@ -105,6 +151,7 @@ export async function POST(request: Request) {
       message,
       service,
       source,
+      ...attribution,
       ipHash: clientKey,
     });
   } catch {

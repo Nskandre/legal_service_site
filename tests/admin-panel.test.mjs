@@ -7,11 +7,11 @@ const databaseSource = await readFile(new URL("../app/lib/database-postgres.ts",
 const leadsRouteSource = await readFile(new URL("../app/api/admin/leads/route.ts", import.meta.url), "utf8");
 
 test("provides quick navigation to every administration section", () => {
-  for (const id of ["admin-leads", "admin-contacts", "admin-pricing", "admin-slots"]) {
+  for (const id of ["admin-economics", "admin-leads", "admin-contacts", "admin-pricing", "admin-slots"]) {
     assert.match(adminSource, new RegExp(`href="#${id}"`));
     assert.match(adminSource, new RegExp(`id="${id}"`));
   }
-  for (const label of ["Журнал заявок", "Контакты", "Стаж и цены", "Свободное время"]) {
+  for (const label of ["Экономика", "Журнал заявок", "Контакты", "Стаж и цены", "Свободное время"]) {
     assert.match(adminSource, new RegExp(`>${label}<`));
   }
 });
@@ -59,5 +59,5 @@ test("retries only delivery rows that are still pending or failed", () => {
   assert.match(databaseSource, /WHERE o\.status IN \('pending', 'failed'\)/);
   assert.match(databaseSource, /AND o\.status = 'failed'/);
   assert.equal((databaseSource.match(/AND status IN \('pending', 'failed'\)/g) || []).length, 2);
-  assert.match(databaseSource, /l\.name, l\.contact, l\.message, l\.service, l\.source, l\.created_at/);
+  assert.match(databaseSource, /l\.name, l\.contact, l\.message, l\.service, l\.source,[\s\S]{0,300}l\.created_at/);
 });

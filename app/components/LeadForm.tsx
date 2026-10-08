@@ -3,6 +3,7 @@
 import { FormEvent, useState } from "react";
 import Link from "next/link";
 import { contacts } from "../lib/content";
+import { getLeadAttribution } from "../lib/lead-attribution";
 import type { SiteConfig } from "../lib/site-config";
 import { metrikaGoal } from "./Metrika";
 
@@ -21,7 +22,7 @@ export function LeadForm({ service = "Первичная консультаци�
     const formElement = event.currentTarget;
     setStatus("sending");
     const form = new FormData(formElement);
-    const payload = Object.fromEntries(form.entries());
+    const payload = { ...Object.fromEntries(form.entries()), ...getLeadAttribution() };
     try {
       const response = await fetch("/api/lead", {
         method: "POST",

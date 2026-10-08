@@ -2,6 +2,7 @@
 
 import { FormEvent, useMemo, useState } from "react";
 import Link from "next/link";
+import { getLeadAttribution } from "../lib/lead-attribution";
 import type { SiteConfig } from "../lib/site-config";
 import { metrikaGoal } from "./Metrika";
 
@@ -43,6 +44,7 @@ export function BookingForm({ config }: { config: SiteConfig }) {
       consent: form.get("consent"),
       service: "Запись на консультацию",
       message: `Дата: ${selectedDate}; время: ${selectedTime}; формат: ${method}`,
+      ...getLeadAttribution(),
     };
     try {
       const response = await fetch("/api/lead", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(payload) });

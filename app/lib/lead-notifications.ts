@@ -19,11 +19,20 @@ type PendingDelivery = {
   message: string;
   service: string;
   source: string;
+  landing_page: string | null;
+  referrer: string | null;
+  utm_source: string | null;
+  utm_medium: string | null;
+  utm_campaign: string | null;
+  utm_content: string | null;
+  utm_term: string | null;
   created_at: string;
 };
 
 export type LeadEmailDetails = Pick<PendingDelivery,
-  "public_number" | "name" | "contact" | "message" | "service" | "source" | "created_at"
+  "public_number" | "name" | "contact" | "message" | "service" | "source" |
+  "landing_page" | "referrer" | "utm_source" | "utm_medium" | "utm_campaign" |
+  "utm_content" | "utm_term" | "created_at"
 >;
 
 export async function enqueueLeadNotifications(leadId: string) {
@@ -44,11 +53,21 @@ export function formatLeadEmailText(lead: LeadEmailDetails) {
       timeStyle: "short",
       timeZone: "Europe/Moscow",
     }).format(createdAt) + " МСК";
+  const utm = [
+    lead.utm_source ? "source=" + lead.utm_source : "",
+    lead.utm_medium ? "medium=" + lead.utm_medium : "",
+    lead.utm_campaign ? "campaign=" + lead.utm_campaign : "",
+    lead.utm_content ? "content=" + lead.utm_content : "",
+    lead.utm_term ? "term=" + lead.utm_term : "",
+  ].filter(Boolean).join("; ") || "не определены";
   return [
     "Новая заявка №" + lead.public_number,
     "Дата: " + createdLabel,
     "Услуга: " + lead.service,
-    "Источник: " + (lead.source === "booking" ? "Запись на консультацию" : "Форма сайта"),
+    "Тип формы: " + (lead.source === "booking" ? "Запись на консультацию" : "Форма сайта"),
+    "Точка входа: " + (lead.landing_page || "не определена"),
+    "Referrer: " + (lead.referrer || "не определён"),
+    "UTM: " + utm,
     "Имя: " + lead.name,
     "Контакт: " + lead.contact,
     "",
