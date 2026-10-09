@@ -6,9 +6,20 @@ import {
   type ContractStatus,
   type LeadQualification,
 } from "./lead-economics";
+import { takeBookingSlot, type BookingSlot } from "./booking-slots";
 
 export type LeadStatus = "new" | "in_progress" | "done" | "declined" | "anonymized";
 export type DeliveryChannel = "telegram" | "max" | "email" | "webhook";
+
+export class BookingSlotUnavailableError extends Error {
+  constructor() {
+    super("Booking slot is unavailable");
+    this.name = "BookingSlotUnavailableError";
+  }
+}
+
+const MAX_TELEGRAM_DELIVERY_ATTEMPTS = 10;
+const DEFAULT_MAX_DELIVERY_ATTEMPTS = 8;
 
 let client: ReturnType<typeof postgres> | undefined;
 
@@ -63,7 +74,7 @@ export async function clearDatabaseRateLimit(key: string) {
   await sql()`DELETE FROM rate_limits WHERE key = ${key}`;
 }
 
-export async function createLead(input: {
+type CreateLeadInput = {
   name: string;
   contact: string;
   message: string;
@@ -77,7 +88,9 @@ export async function createLead(input: {
   utm_content: string;
   utm_term: string;
   ipHash?: string;
-}) {
+};
+
+export async function createLead(input: CreateLeadInput) {
   const id = crypto.randomUUID();
   const db = sql();
   const rows = await db<[{ id: string; public_number: string; created_at: string }]>`
@@ -107,6 +120,57 @@ export async function createLead(input: {
     } as never)})
   `;
   return rows[0];
+}
+
+export async function createBookingLead(input: CreateLeadInput, slot: BookingSlot) {
+  return sql().begin(async (transaction) => {
+    const configRows = await transaction<[{ value: unknown }]>`
+      SELECT value FROM site_config WHERE id = 1 FOR UPDATE
+    `;
+    const currentValue = configRows[0]?.value;
+    const currentConfig = currentValue && typeof currentValue === "object"
+      ? currentValue as Record<string, unknown>
+      : null;
+    const remainingSlots = takeBookingSlot(currentConfig?.bookingSlots, slot.date, slot.time);
+    if (!currentConfig || !remainingSlots) throw new BookingSlotUnavailableError();
+
+    await transaction`
+      UPDATE site_config
+      SET value = ${transaction.json({ ...currentConfig, bookingSlots: remainingSlots } as never)},
+          updated_at = now()
+      WHERE id = 1
+    `;
+
+    const id = crypto.randomUUID();
+    const rows = await transaction<[{ id: string; public_number: string; created_at: string }]>`
+      INSERT INTO leads (
+        id, name, contact, message, service, source, landing_page, referrer,
+        utm_source, utm_medium, utm_campaign, utm_content, utm_term, ip_hash
+      )
+      VALUES (
+        ${id}, ${input.name}, ${input.contact}, ${input.message}, ${input.service}, ${input.source},
+        ${input.landing_page || null}, ${input.referrer || null}, ${input.utm_source || null},
+        ${input.utm_medium || null}, ${input.utm_campaign || null}, ${input.utm_content || null},
+        ${input.utm_term || null}, ${input.ipHash ?? null}
+      )
+      RETURNING id, public_number, created_at
+    `;
+    await transaction`
+      INSERT INTO lead_events (lead_id, event_type, details)
+      VALUES (${id}, 'created', ${transaction.json({
+        source: input.source,
+        landing_page: input.landing_page || null,
+        referrer: input.referrer || null,
+        utm_source: input.utm_source || null,
+        utm_medium: input.utm_medium || null,
+        utm_campaign: input.utm_campaign || null,
+        utm_content: input.utm_content || null,
+        utm_term: input.utm_term || null,
+        booking_slot: slot,
+      } as never)})
+    `;
+    return rows[0];
+  });
 }
 
 export async function listLeads(options: { query?: string; status?: string; limit?: number } = {}) {
@@ -362,7 +426,20 @@ export async function pendingDeliveries(channels: DeliveryChannel[], limit = 20)
     WHERE o.status IN ('pending', 'failed')
       AND o.channel = ANY(${channels})
       AND o.next_attempt_at <= now()
-      AND o.attempts < 8
+      AND o.attempts < CASE
+        WHEN o.channel = 'telegram' THEN ${MAX_TELEGRAM_DELIVERY_ATTEMPTS}
+        ELSE ${DEFAULT_MAX_DELIVERY_ATTEMPTS}
+      END
+      AND (
+        o.channel <> 'telegram'
+        OR NOT EXISTS (
+          SELECT 1
+          FROM delivery_outbox AS delivered_email
+          WHERE delivered_email.lead_id = o.lead_id
+            AND delivered_email.channel = 'email'
+            AND delivered_email.status = 'sent'
+        )
+      )
     ORDER BY o.next_attempt_at, o.id
     LIMIT ${limit}
   `;

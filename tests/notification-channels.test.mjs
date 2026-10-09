@@ -8,6 +8,7 @@ const leadFormSource = await readFile(new URL("../app/components/LeadForm.tsx", 
 const siteShellSource = await readFile(new URL("../app/components/SiteShell.tsx", import.meta.url), "utf8");
 const smtpSource = await readFile(new URL("../app/lib/smtp-email.ts", import.meta.url), "utf8");
 const leadApiSource = await readFile(new URL("../app/api/lead/route.ts", import.meta.url), "utf8");
+const databaseSource = await readFile(new URL("../app/lib/database-postgres.ts", import.meta.url), "utf8");
 const globalStyles = await readFile(new URL("../app/globals.css", import.meta.url), "utf8");
 
 test("uses Telegram when both credentials are configured", () => {
@@ -149,4 +150,15 @@ test("throws after the final transient failure", async () => {
     throw new Error("timeout");
   }, { sleep: async () => {} }), /timeout/);
   assert.equal(calls, 3);
+});
+
+test("caps outbox retries at ten and stops Telegram after successful email", () => {
+  assert.match(databaseSource, /const MAX_TELEGRAM_DELIVERY_ATTEMPTS = 10/);
+  assert.match(databaseSource, /const DEFAULT_MAX_DELIVERY_ATTEMPTS = 8/);
+  assert.match(databaseSource, /WHEN o\.channel = 'telegram' THEN \$\{MAX_TELEGRAM_DELIVERY_ATTEMPTS\}/);
+  assert.match(databaseSource, /ELSE \$\{DEFAULT_MAX_DELIVERY_ATTEMPTS\}/);
+  assert.match(databaseSource, /o\.channel <> 'telegram'/);
+  assert.match(databaseSource, /delivered_email\.lead_id = o\.lead_id/);
+  assert.match(databaseSource, /delivered_email\.channel = 'email'/);
+  assert.match(databaseSource, /delivered_email\.status = 'sent'/);
 });

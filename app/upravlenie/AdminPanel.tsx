@@ -454,7 +454,7 @@ export function AdminPanel() {
           <p>Добавьте дату и время. Только эти слоты будут доступны в форме записи.</p>
           <div className="admin-slot-add">
             <label><span>Дата</span><input type="date" value={slotDate} onChange={(event) => setSlotDate(event.target.value)} /></label>
-            <label><span>Время</span><input type="time" value={slotTime} onChange={(event) => setSlotTime(event.target.value)} /></label>
+            <label><span>Время</span><input type="time" step={600} value={slotTime} onChange={(event) => setSlotTime(event.target.value)} /></label>
             <button className="button button--outline" type="button" onClick={addSlot}>Добавить</button>
           </div>
           {config.bookingSlots.length ? (

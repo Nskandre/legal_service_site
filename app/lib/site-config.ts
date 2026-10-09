@@ -1,11 +1,12 @@
 import { contacts, pricingItems, services } from "./content";
+import { normalizeBookingSlots, type BookingSlot } from "./booking-slots";
 import {
   databaseConfigured,
   getDatabaseConfig,
   saveDatabaseConfig,
 } from "@runtime/database";
 
-export type BookingSlot = { date: string; time: string };
+export type { BookingSlot } from "./booking-slots";
 
 export type SiteConfig = {
   contacts: typeof contacts;
@@ -42,12 +43,7 @@ export function normalizeSiteConfig(value: unknown): SiteConfig {
     pricingPrices[item.id] = safeText(source.pricingPrices?.[item.id], item.price, 80);
   }
 
-  const bookingSlots = Array.isArray(source.bookingSlots)
-    ? source.bookingSlots
-        .filter((slot): slot is BookingSlot => Boolean(slot && /^\d{4}-\d{2}-\d{2}$/.test(slot.date) && /^\d{2}:\d{2}$/.test(slot.time)))
-        .slice(0, 180)
-        .sort((a, b) => `${a.date}T${a.time}`.localeCompare(`${b.date}T${b.time}`))
-    : [];
+  const bookingSlots = normalizeBookingSlots(source.bookingSlots);
 
   return {
     contacts: {

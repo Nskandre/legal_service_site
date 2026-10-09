@@ -1,7 +1,13 @@
 import { after } from "next/server";
 import { requestClientKey } from "../../lib/admin-auth";
 import { configuredDeliveryChannels } from "../../lib/notification-channels";
-import { consumeDatabaseRateLimit, createLead, databaseConfigured } from "@runtime/database";
+import {
+  BookingSlotUnavailableError,
+  consumeDatabaseRateLimit,
+  createBookingLead,
+  createLead,
+  databaseConfigured,
+} from "@runtime/database";
 import {
   enqueueLeadNotifications,
   flushPendingNotifications,
@@ -23,6 +29,9 @@ type Lead = {
   utmCampaign?: string;
   utmContent?: string;
   utmTerm?: string;
+  bookingDate?: string;
+  bookingTime?: string;
+  bookingMethod?: string;
 };
 
 function clean(value: unknown, max = 2000) {
@@ -119,9 +128,23 @@ export async function POST(request: Request) {
   if (body.website) return Response.json({ ok: true });
   const name = clean(body.name, 120);
   const contact = clean(body.contact, 180);
-  const message = clean(body.message || "Не указано");
   const service = clean(body.service || "Первичная консультация", 180);
   const source = service === "Запись на консультацию" ? "booking" : "website";
+  const bookingSlot = {
+    date: clean(body.bookingDate, 10),
+    time: clean(body.bookingTime, 5),
+  };
+  const bookingMethod = clean(body.bookingMethod, 180);
+  if (source === "booking" && (
+    !/^\d{4}-\d{2}-\d{2}$/.test(bookingSlot.date) ||
+    !/^\d{2}:\d{2}$/.test(bookingSlot.time) ||
+    !bookingMethod
+  )) {
+    return Response.json({ ok: false, error: "Выберите доступные дату, время и формат встречи" }, { status: 422 });
+  }
+  const message = source === "booking"
+    ? `Дата: ${bookingSlot.date}; время: ${bookingSlot.time}; формат: ${bookingMethod}`
+    : clean(body.message || "Не указано");
   const attribution = {
     landing_page: cleanLandingPage(body.landingPage),
     referrer: cleanReferrer(body.referrer, new URL(request.url).origin),
@@ -145,7 +168,7 @@ export async function POST(request: Request) {
   }
   let lead: Awaited<ReturnType<typeof createLead>>;
   try {
-    lead = await createLead({
+    const leadInput = {
       name,
       contact,
       message,
@@ -153,8 +176,17 @@ export async function POST(request: Request) {
       source,
       ...attribution,
       ipHash: clientKey,
-    });
-  } catch {
+    };
+    lead = source === "booking"
+      ? await createBookingLead(leadInput, bookingSlot)
+      : await createLead(leadInput);
+  } catch (error) {
+    if (error instanceof BookingSlotUnavailableError) {
+      return Response.json(
+        { ok: false, error: "Этот слот уже занят. Обновите страницу и выберите другое время." },
+        { status: 409 },
+      );
+    }
     return Response.json({ ok: false, error: "Не удалось сохранить заявку" }, { status: 503 });
   }
   try {

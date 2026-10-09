@@ -19,6 +19,7 @@ export function BookingForm({ config }: { config: SiteConfig }) {
   const [selectedDate, setSelectedDate] = useState("");
   const [selectedTime, setSelectedTime] = useState("");
   const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
+  const [errorMessage, setErrorMessage] = useState("");
 
   const available = useMemo(() => new Set(slots.map((slot) => slot.date)), [slots]);
   const calendar = useMemo(() => {
@@ -36,6 +37,7 @@ export function BookingForm({ config }: { config: SiteConfig }) {
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setStatus("sending");
+    setErrorMessage("");
     const form = new FormData(event.currentTarget);
     const method = String(form.get("method") || "");
     const payload = {
@@ -43,16 +45,20 @@ export function BookingForm({ config }: { config: SiteConfig }) {
       contact: form.get("contact"),
       consent: form.get("consent"),
       service: "Запись на консультацию",
-      message: `Дата: ${selectedDate}; время: ${selectedTime}; формат: ${method}`,
+      bookingDate: selectedDate,
+      bookingTime: selectedTime,
+      bookingMethod: method,
       ...getLeadAttribution(),
     };
     try {
       const response = await fetch("/api/lead", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(payload) });
-      if (!response.ok) throw new Error("request failed");
+      const result = await response.json().catch(() => ({})) as { error?: string };
+      if (!response.ok) throw new Error(result.error || "Не удалось отправить запись.");
       metrikaGoal("booking_success", { method });
       setStatus("sent");
-    } catch {
+    } catch (error) {
       metrikaGoal("booking_error", { method });
+      setErrorMessage(error instanceof Error ? error.message : "Не удалось отправить запись.");
       setStatus("error");
     }
   }
@@ -107,7 +113,7 @@ export function BookingForm({ config }: { config: SiteConfig }) {
       </div>
       <label className="consent"><input type="checkbox" name="consent" value="yes" required /><span>Согласен(на) на обработку персональных данных согласно <Link href="/politika">политике конфиденциальности</Link></span></label>
       <button className="button button--primary" disabled={!selectedTime || status === "sending"}>{status === "sending" ? "Отправляем…" : "Записаться"}</button>
-      <p className="form-note" aria-live="polite">{status === "sent" && "Запись отправлена. Я подтвержу выбранное время."}{status === "error" && "Не удалось отправить запись. Пожалуйста, свяжитесь со мной по телефону или в мессенджере."}</p>
+      <p className="form-note" aria-live="polite">{status === "sent" && "Запись отправлена. Я подтвержу выбранное время."}{status === "error" && `${errorMessage} Пожалуйста, свяжитесь со мной по телефону или в мессенджере.`}</p>
     </form>
   );
 }
