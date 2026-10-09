@@ -161,4 +161,5 @@ test("caps outbox retries at ten and stops Telegram after successful email", () 
   assert.match(databaseSource, /delivered_email\.lead_id = o\.lead_id/);
   assert.match(databaseSource, /delivered_email\.channel = 'email'/);
   assert.match(databaseSource, /delivered_email\.status = 'sent'/);
+  assert.match(notificationSource, /await Promise\.all\(items\.map\(async \(item\) =>/);
 });

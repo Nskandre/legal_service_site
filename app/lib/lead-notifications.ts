@@ -167,7 +167,7 @@ export async function flushPendingNotifications() {
   flushing = true;
   try {
     const items = await pendingDeliveries(channels, 20) as unknown as PendingDelivery[];
-    for (const item of items) {
+    await Promise.all(items.map(async (item) => {
       try {
         const response = await deliver(item);
         if (!response.ok) throw new Error("HTTP " + response.status);
@@ -175,7 +175,7 @@ export async function flushPendingNotifications() {
       } catch (error) {
         await markDeliveryFailed(item.id, item.attempts, deliveryErrorMessage(error));
       }
-    }
+    }));
   } finally {
     flushing = false;
   }
