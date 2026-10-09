@@ -427,8 +427,8 @@ export async function pendingDeliveries(channels: DeliveryChannel[], limit = 20)
       AND o.channel = ANY(${channels})
       AND o.next_attempt_at <= now()
       AND o.attempts < CASE
-        WHEN o.channel = 'telegram' THEN ${MAX_TELEGRAM_DELIVERY_ATTEMPTS}
-        ELSE ${DEFAULT_MAX_DELIVERY_ATTEMPTS}
+        WHEN o.channel = 'telegram' THEN CAST(${MAX_TELEGRAM_DELIVERY_ATTEMPTS} AS integer)
+        ELSE CAST(${DEFAULT_MAX_DELIVERY_ATTEMPTS} AS integer)
       END
       AND (
         o.channel <> 'telegram'

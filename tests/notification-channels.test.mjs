@@ -155,8 +155,8 @@ test("throws after the final transient failure", async () => {
 test("caps outbox retries at ten and stops Telegram after successful email", () => {
   assert.match(databaseSource, /const MAX_TELEGRAM_DELIVERY_ATTEMPTS = 10/);
   assert.match(databaseSource, /const DEFAULT_MAX_DELIVERY_ATTEMPTS = 8/);
-  assert.match(databaseSource, /WHEN o\.channel = 'telegram' THEN \$\{MAX_TELEGRAM_DELIVERY_ATTEMPTS\}/);
-  assert.match(databaseSource, /ELSE \$\{DEFAULT_MAX_DELIVERY_ATTEMPTS\}/);
+  assert.match(databaseSource, /THEN CAST\(\$\{MAX_TELEGRAM_DELIVERY_ATTEMPTS\} AS integer\)/);
+  assert.match(databaseSource, /ELSE CAST\(\$\{DEFAULT_MAX_DELIVERY_ATTEMPTS\} AS integer\)/);
   assert.match(databaseSource, /o\.channel <> 'telegram'/);
   assert.match(databaseSource, /delivered_email\.lead_id = o\.lead_id/);
   assert.match(databaseSource, /delivered_email\.channel = 'email'/);
