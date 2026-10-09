@@ -1,6 +1,7 @@
 "use client";
 
 import Script from "next/script";
+import { usePathname } from "next/navigation";
 import { useEffect } from "react";
 
 declare global {
@@ -31,6 +32,8 @@ export function metrikaGoal(name: string, parameters?: Record<string, string>) {
 
 export function Metrika({ counterId }: { counterId?: string }) {
   const id = resolveCounterId(counterId);
+  const pathname = usePathname();
+  const isAdministration = pathname === "/upravlenie" || pathname.startsWith("/upravlenie/");
   const initScript =
     "(function(m,e,t,r,i,k,a){m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};" +
     "m[i].l=1*new Date();for(var j=0;j<document.scripts.length;j++){if(document.scripts[j].src===r){return;}}" +
@@ -40,6 +43,7 @@ export function Metrika({ counterId }: { counterId?: string }) {
     ",'init',{clickmap:true,trackLinks:true,accurateTrackBounce:true,webvisor:false});";
 
   useEffect(() => {
+    if (isAdministration) return;
     const trackContact = (event: MouseEvent) => {
       const target = event.target;
       if (!(target instanceof Element)) return;
@@ -50,7 +54,9 @@ export function Metrika({ counterId }: { counterId?: string }) {
     };
     document.addEventListener("click", trackContact);
     return () => document.removeEventListener("click", trackContact);
-  }, [id]);
+  }, [id, isAdministration]);
+
+  if (isAdministration) return null;
 
   return (
     <>

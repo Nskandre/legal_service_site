@@ -4,6 +4,7 @@ import { AdminPanel } from "./AdminPanel";
 export const metadata: Metadata = {
   title: "Управление сайтом",
   robots: { index: false, follow: false, noarchive: true },
+  alternates: { canonical: null },
 };
 
 export const dynamic = "force-dynamic";

@@ -139,6 +139,8 @@ test("keeps the administration page hidden from navigation and search", async ()
   assert.equal(adminResponse.status, 200);
   assert.match(admin, /Управление сайтом/);
   assert.match(admin, /noindex/);
+  assert.doesNotMatch(admin, /<link[^>]+rel=["']canonical["']/i);
+  assert.doesNotMatch(admin, /id=["']yandex-metrika["']|mc\.yandex\.ru\/watch\//i);
 
   const robots = await render("/robots.txt");
   const robotsText = await robots.text();

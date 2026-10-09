@@ -88,7 +88,7 @@ test("shows an accessible scroll cue until the page bottom and aligns the mobile
   assert.match(siteShellSource, /remaining > 40/);
   assert.match(siteShellSource, /window\.addEventListener\("scroll", updateScrollCue/);
   assert.match(siteShellSource, /window\.scrollBy\(\{/);
-  assert.match(siteShellSource, /aria-label="Показать следующую часть страницы"/);
+  assert.match(siteShellSource, /aria-label="Ещё ниже — показать следующую часть страницы"/);
   assert.match(siteShellSource, /tabIndex=\{showScrollCue \? 0 : -1\}/);
   assert.match(globalStyles, /\.header-contacts button:first-child\s*\{\s*text-align: left;/);
   assert.match(globalStyles, /\.scroll-cue\.is-visible/);
