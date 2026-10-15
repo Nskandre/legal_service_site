@@ -53,7 +53,7 @@ export function normalizeSiteConfig(value: unknown): SiteConfig {
       telegram: safeText(sourceContacts.telegram, contacts.telegram, 500),
       max: safeText(sourceContacts.max, contacts.max, 500),
       location: safeText(sourceContacts.location, contacts.location, 160),
-      workFormat: safeText(sourceContacts.workFormat, contacts.workFormat, 200),
+      workFormat: safeText(sourceContacts.workFormat, contacts.workFormat, 200).replaceAll("*", "·"),
     },
     experienceYears: safeText(source.experienceYears, defaultSiteConfig.experienceYears, 40),
     servicePrices,

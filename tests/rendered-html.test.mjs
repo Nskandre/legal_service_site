@@ -72,7 +72,7 @@ test("renders consistent services, work format and communication channels", asyn
   assert.equal(homeResponse.status, 200);
   assert.match(home, /Евгения Бычихина/);
   assert.match(home, /Четыре направления практики/);
-  assert.match(home, /Москва, метро Академическая \* онлайн по России/);
+  assert.match(home, /Москва, метро Академическая · онлайн по России/);
   assert.match(home, />Telegram</);
   assert.match(home, />MAX</);
   assert.match(home, /Записаться на консультацию/);
@@ -98,7 +98,7 @@ test("renders consistent services, work format and communication channels", asyn
   assert.match(contacts, /legserv24@yandex\.ru/);
   assert.match(contacts, /Написать в Telegram/);
   assert.match(contacts, /Написать в MAX/);
-  assert.match(contacts, /Москва, метро Академическая \* онлайн по России/);
+  assert.match(contacts, /Москва, метро Академическая · онлайн по России/);
   assert.ok(
     contacts.indexOf("Написать в MAX") < contacts.indexOf("Написать в Telegram"),
   );

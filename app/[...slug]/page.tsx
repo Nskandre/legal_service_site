@@ -47,7 +47,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     "/kontakty": {
       title: "Контакты",
       description:
-        "Связаться с юристом Евгенией Бычихиной: Москва, метро Академическая * онлайн по России.",
+        "Связаться с юристом Евгенией Бычихиной: Москва, метро Академическая · онлайн по России.",
     },
     "/praktika": {
       title: "Практические юридические ситуации",
@@ -95,7 +95,7 @@ export default async function ContentPage({ params }: Props) {
 function CasesPage({ config }: { config: SiteConfig }) {
   return (
     <SiteShell config={config}>
-      <section className="inner-hero cases-hero">
+      <section className="inner-hero inner-hero--short cases-hero">
         <Breadcrumbs current="Практические ситуации" />
         <div className="inner-hero-grid">
           <div>
@@ -387,21 +387,27 @@ function ContactsPage({ config }: { config: SiteConfig }) {
     <SiteShell config={config}>
       <section className="inner-hero inner-hero--short">
         <Breadcrumbs current="Контакты" />
-        <p className="eyebrow">Связаться</p>
-        <h1>Удобным для вас способом</h1>
-        <p className="inner-lead">{contacts.workFormat}</p>
-      </section>
-      <section className="section contacts-grid">
-        <div className="contact-cards">
-          <a href={`tel:${contacts.phone}`}><span>Телефон</span><b>{contacts.phoneDisplay}</b></a>
-          <a href={`mailto:${contacts.email}`}><span>Электронная почта</span><b>{contacts.email}</b></a>
-          <a href={contacts.max} target="_blank" rel="noreferrer"><span>MAX</span><b>Написать в MAX ↗</b></a>
-          <a href={contacts.telegram} target="_blank" rel="noreferrer"><span>Telegram</span><b>Написать в Telegram ↗</b></a>
-          <div><span>Формат работы</span><b>{contacts.workFormat}</b></div>
+        <div className="contacts-grid">
+          <div>
+            <p className="eyebrow">Связаться</p>
+            <h1>Удобным для вас способом</h1>
+            <p className="inner-lead">{contacts.workFormat}</p>
+          </div>
+          <div className="contact-cards">
+            <a href={`tel:${contacts.phone}`}><span>Телефон</span><b>{contacts.phoneDisplay}</b></a>
+            <a href={`mailto:${contacts.email}`}><span>Электронная почта</span><b>{contacts.email}</b></a>
+            <a href={contacts.max} target="_blank" rel="noreferrer"><span>MAX</span><b>Написать в MAX ↗</b></a>
+            <a href={contacts.telegram} target="_blank" rel="noreferrer"><span>Telegram</span><b>Написать в Telegram ↗</b></a>
+            <div><span>Формат работы</span><b>{contacts.workFormat}</b></div>
+          </div>
         </div>
-        <div className="paper-card">
+      </section>
+      <section className="section consultation">
+        <div>
           <p className="eyebrow">Заявка</p>
           <h2>Опишите ваш вопрос</h2>
+        </div>
+        <div className="paper-card">
           <LeadForm contactDetails={contacts} />
         </div>
       </section>

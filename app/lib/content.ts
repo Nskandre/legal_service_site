@@ -214,7 +214,7 @@ export const contacts = {
     process.env.NEXT_PUBLIC_MAX_URL ||
     "https://max.ru/u/f9LHodD0cOKbM7gLACi6hYkE4Ek_ToWMXdD2zBHwJ1i_t9Av_nHZjSa2hZ8",
   location: "Москва, метро Академическая",
-  workFormat: "Москва, метро Академическая * онлайн по России",
+  workFormat: "Москва, метро Академическая · онлайн по России",
 };
 
 export const pricingItems = [

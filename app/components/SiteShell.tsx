@@ -183,12 +183,12 @@ export function SiteShell({ children, config }: { children: React.ReactNode; con
       <button
         className={`scroll-cue ${showScrollCue ? "is-visible" : ""}`}
         type="button"
-        aria-label="Ещё ниже — показать следующую часть страницы"
+        aria-label="Ниже — показать следующую часть страницы"
         aria-hidden={!showScrollCue}
         tabIndex={showScrollCue ? 0 : -1}
         onClick={scrollForward}
       >
-        <span>Ещё ниже</span>
+        <span>Ниже</span>
         <i aria-hidden="true" />
       </button>
 
