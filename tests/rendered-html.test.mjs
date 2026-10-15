@@ -92,7 +92,9 @@ test("renders consistent services, work format and communication channels", asyn
   const contacts = await contactsResponse.text();
 
   assert.equal(contactsResponse.status, 200);
-  assert.match(contacts, /\+7 \(939\) 845-63-95/);
+  assert.match(contacts, /\+7 \(495\) 148-78-28/);
+  assert.match(contacts, /tel:\+74951487828/);
+  assert.doesNotMatch(contacts, /tel:\+79398456395/);
   assert.match(contacts, /legserv24@yandex\.ru/);
   assert.match(contacts, /Написать в Telegram/);
   assert.match(contacts, /Написать в MAX/);
