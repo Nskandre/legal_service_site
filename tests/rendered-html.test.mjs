@@ -72,6 +72,16 @@ test("renders consistent services, work format and communication channels", asyn
   assert.equal(homeResponse.status, 200);
   assert.match(home, /Евгения Бычихина/);
   assert.match(home, /Четыре направления практики/);
+  const serviceCards = [...home.matchAll(/<a class="service-card" href="\/uslugi\/([^"]+)"[^>]*>([\s\S]*?)<\/a>/g)];
+  assert.deepEqual(serviceCards.map((card) => card[1]), [
+    "nedvizhimost", "semeinye-spory", "nasledstvo", "sudebnye-spory",
+  ]);
+  serviceCards.forEach((card, index) => {
+    assert.match(
+      card[2].replace(/<!--[\s\S]*?-->/g, ""),
+      new RegExp(`<span class="service-number">0${index + 1}</span>`),
+    );
+  });
   assert.match(home, /Москва, метро Академическая · онлайн по России/);
   assert.match(home, />Telegram</);
   assert.match(home, />MAX</);

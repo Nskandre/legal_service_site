@@ -50,7 +50,16 @@ function createLegalServiceSchema(pageContacts: SiteConfig["contacts"], pageServ
 export default async function Home() {
   const config = await getSiteConfig();
   const pageContacts = config.contacts;
-  const pageServices = configuredServices(config);
+  const serviceOrder = new Map([
+    ["nedvizhimost", 0],
+    ["semeinye-spory", 1],
+    ["nasledstvo", 2],
+    ["sudebnye-spory", 3],
+  ]);
+  const pageServices = configuredServices(config).sort(
+    (a, b) => (serviceOrder.get(a.slug) ?? Number.MAX_SAFE_INTEGER)
+      - (serviceOrder.get(b.slug) ?? Number.MAX_SAFE_INTEGER),
+  );
   const legalServiceSchema = createLegalServiceSchema(pageContacts, pageServices);
   return (
     <SiteShell config={config}>
