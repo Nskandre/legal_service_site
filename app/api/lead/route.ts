@@ -192,7 +192,7 @@ export async function POST(request: Request) {
   try {
     await enqueueLeadNotifications(lead.id);
     after(async () => {
-      await flushPendingNotifications();
+      await flushPendingNotifications(lead.id);
     });
   } catch {
     // The lead is already safe in PostgreSQL. A notification failure must not

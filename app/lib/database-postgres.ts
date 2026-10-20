@@ -414,7 +414,7 @@ export async function queueDelivery(leadId: string, channel: DeliveryChannel) {
   `;
 }
 
-export async function pendingDeliveries(channels: DeliveryChannel[], limit = 20) {
+export async function pendingDeliveries(channels: DeliveryChannel[], limit = 20, leadId?: string) {
   if (!channels.length) return [];
   return sql()`
     SELECT o.id, o.lead_id, o.channel, o.attempts,
@@ -424,6 +424,7 @@ export async function pendingDeliveries(channels: DeliveryChannel[], limit = 20)
     FROM delivery_outbox o
     JOIN leads l ON l.id = o.lead_id
     WHERE o.status IN ('pending', 'failed')
+      AND (${leadId ?? null}::uuid IS NULL OR o.lead_id = ${leadId ?? null}::uuid)
       AND o.channel = ANY(${channels})
       AND o.next_attempt_at <= now()
       AND o.attempts < CASE

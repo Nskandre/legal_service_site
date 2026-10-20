@@ -158,15 +158,15 @@ function deliveryErrorMessage(error: unknown) {
   return details.join(" | ");
 }
 
-let flushing = false;
+let notificationFlush = Promise.resolve();
 
-export async function flushPendingNotifications() {
-  if (!databaseConfigured() || flushing) return;
-  const channels = configuredDeliveryChannels();
-  if (!channels.length) return;
-  flushing = true;
-  try {
-    const items = await pendingDeliveries(channels, 20) as unknown as PendingDelivery[];
+export async function flushPendingNotifications(leadId?: string) {
+  // Serialize callers without dropping a new lead while another flush is active.
+  const task = notificationFlush.then(async () => {
+    if (!databaseConfigured()) return;
+    const channels = configuredDeliveryChannels();
+    if (!channels.length) return;
+    const items = await pendingDeliveries(channels, 20, leadId) as unknown as PendingDelivery[];
     await Promise.all(items.map(async (item) => {
       try {
         const response = await deliver(item);
@@ -176,7 +176,8 @@ export async function flushPendingNotifications() {
         await markDeliveryFailed(item.id, item.attempts, deliveryErrorMessage(error));
       }
     }));
-  } finally {
-    flushing = false;
-  }
+  });
+  // A failed query must not block later explicit retries or new lead deliveries.
+  notificationFlush = task.catch(() => {});
+  await task;
 }
