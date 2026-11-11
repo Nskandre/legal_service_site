@@ -109,6 +109,9 @@ test("renders consistent services, work format and communication channels", asyn
   assert.match(contacts, /Написать в Telegram/);
   assert.match(contacts, /Написать в MAX/);
   assert.match(contacts, /Москва, метро Академическая · онлайн по России/);
+  assert.match(contacts, /<span class="contact-address-label">Адрес<\/span>/);
+  assert.match(contacts, /<address><p>Москва, метро Академическая, ул\. Дмитрия Ульянова, д\. 30<\/p>/);
+  assert.match(contacts, /Приём по предварительной договорённости<\/p><\/address>/);
   assert.ok(
     contacts.indexOf("Написать в MAX") < contacts.indexOf("Написать в Telegram"),
   );

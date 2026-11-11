@@ -398,7 +398,13 @@ function ContactsPage({ config }: { config: SiteConfig }) {
             <a href={`mailto:${contacts.email}`}><span>Электронная почта</span><b>{contacts.email}</b></a>
             <a href={contacts.max} target="_blank" rel="noreferrer"><span>MAX</span><b>Написать в MAX ↗</b></a>
             <a href={contacts.telegram} target="_blank" rel="noreferrer"><span>Telegram</span><b>Написать в Telegram ↗</b></a>
-            <div><span>Формат работы</span><b>{contacts.workFormat}</b></div>
+            <div>
+              <span className="contact-address-label">Адрес</span>
+              <address>
+                <p>Москва, метро Академическая, ул. Дмитрия Ульянова, д. 30</p>
+                <p>Приём по предварительной договорённости</p>
+              </address>
+            </div>
           </div>
         </div>
       </section>

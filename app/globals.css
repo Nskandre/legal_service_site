@@ -133,6 +133,10 @@ h3 {
   top: 0;
 }
 
+.site-shell {
+  font-size: 1.0625rem;
+}
+
 .site-header {
   position: sticky;
   top: 0;
@@ -143,9 +147,8 @@ h3 {
     "contacts contacts";
   grid-template-columns: auto 1fr;
   align-items: center;
-  gap: 12px 32px;
-  min-height: 118px;
-  padding: 14px clamp(22px, 4vw, 64px) 12px;
+  gap: 8px 32px;
+  padding: 10px clamp(22px, 4vw, 64px);
   border-bottom: 1px solid rgba(212, 200, 187, 0.82);
   background: rgba(245, 241, 234, 0.92);
   backdrop-filter: blur(18px);
@@ -168,7 +171,7 @@ h3 {
   align-items: center;
   justify-self: end;
   gap: clamp(20px, 2.6vw, 42px);
-  font-size: 0.95rem;
+  font-size: 1.0625rem;
   font-weight: 500;
 }
 
@@ -180,9 +183,9 @@ h3 {
   padding-top: 9px;
   border-top: 1px solid rgba(212, 200, 187, 0.62);
   color: var(--taupe);
-  font-size: 0.9rem;
+  font-size: 1rem;
   font-weight: 600;
-  letter-spacing: 0.035em;
+  letter-spacing: 0.015em;
 }
 
 .header-contacts a,
@@ -205,7 +208,7 @@ h3 {
 .header-contact-popover {
   position: absolute;
   right: clamp(22px, 4vw, 64px);
-  bottom: -82px;
+  top: calc(100% + 8px);
   display: grid;
   gap: 2px;
   min-width: min(380px, calc(100vw - 44px));
@@ -218,7 +221,7 @@ h3 {
 
 .header-contact-popover span {
   color: var(--taupe);
-  font-size: 0.78rem;
+  font-size: 0.875rem;
 }
 
 .header-contact-popover b {
@@ -320,13 +323,13 @@ textarea:focus-visible {
   min-height: 48px;
   padding: 12px 20px;
   border-radius: 12px;
-  font-size: 0.88rem;
+  font-size: 0.9375rem;
 }
 
 .eyebrow {
   margin-bottom: 20px;
   color: var(--burgundy);
-  font-size: 0.78rem;
+  font-size: 0.875rem;
   font-weight: 600;
   letter-spacing: 0.16em;
   line-height: 1.3;
@@ -339,8 +342,7 @@ textarea:focus-visible {
   grid-template-areas:
     "copy art"
     "trust trust";
-  min-height: calc(100vh - 96px);
-  padding: clamp(54px, 6vw, 90px) clamp(22px, 4vw, 64px) 34px;
+  padding: clamp(32px, 3.5vw, 56px) clamp(22px, 4vw, 64px) 24px;
   column-gap: clamp(38px, 5vw, 86px);
   overflow: hidden;
 }
@@ -349,18 +351,20 @@ textarea:focus-visible {
   grid-area: copy;
   min-width: 0;
   align-self: center;
-  padding-bottom: 28px;
+  padding-bottom: 8px;
 }
 
 .hero h1 {
   max-width: 850px;
-  margin-bottom: 30px;
+  margin-bottom: 22px;
+  font-size: clamp(2.9rem, 4.3vw, 5rem);
+  overflow-wrap: anywhere;
 }
 
 .hero-lead,
 .inner-lead {
   max-width: 700px;
-  margin-bottom: 34px;
+  margin-bottom: 24px;
   color: var(--taupe);
   font-size: clamp(1.08rem, 1.4vw, 1.32rem);
   line-height: 1.65;
@@ -376,7 +380,7 @@ textarea:focus-visible {
   position: relative;
   grid-area: art;
   align-self: stretch;
-  min-height: 560px;
+  min-height: clamp(420px, 37vw, 560px);
   border-radius: var(--radius);
   background: #ded0c0 url("/hero-paper-1122.webp") center / cover no-repeat;
   box-shadow: var(--shadow);
@@ -409,7 +413,7 @@ textarea:focus-visible {
 .hero-art img {
   width: 100%;
   height: 100%;
-  max-height: 690px;
+  max-height: 580px;
   object-fit: cover;
   object-position: center;
   border-radius: var(--radius);
@@ -420,7 +424,7 @@ textarea:focus-visible {
   grid-area: trust;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  margin-top: 28px;
+  margin-top: 22px;
   border: 1px solid rgba(212, 200, 187, 0.88);
   border-radius: 20px;
   background: rgba(255, 253, 249, 0.7);
@@ -431,8 +435,8 @@ textarea:focus-visible {
   display: flex;
   align-items: center;
   gap: 20px;
-  min-height: 118px;
-  padding: 24px clamp(20px, 3vw, 42px);
+  min-height: 94px;
+  padding: 16px clamp(20px, 3vw, 42px);
 }
 
 .trust-strip > div + div {
@@ -440,7 +444,7 @@ textarea:focus-visible {
 }
 
 .trust-strip b {
-  font-size: clamp(0.92rem, 1.25vw, 1.12rem);
+  font-size: clamp(1rem, 1.25vw, 1.125rem);
   font-weight: 500;
   line-height: 1.45;
 }
@@ -461,7 +465,7 @@ textarea:focus-visible {
 .section {
   width: min(100%, 1540px);
   margin: 0 auto;
-  padding: clamp(82px, 9vw, 148px) clamp(22px, 4vw, 64px);
+  padding: clamp(44px, 4.8vw, 76px) clamp(22px, 4vw, 64px);
 }
 
 .section-heading {
@@ -469,7 +473,7 @@ textarea:focus-visible {
   grid-template-columns: minmax(0, 1.25fr) minmax(280px, 0.55fr);
   gap: 80px;
   align-items: end;
-  margin-bottom: 56px;
+  margin-bottom: 32px;
 }
 
 .section-heading h2 {
@@ -496,8 +500,8 @@ textarea:focus-visible {
   position: relative;
   display: flex;
   flex-direction: column;
-  min-height: 410px;
-  padding: 32px;
+  min-height: 330px;
+  padding: clamp(22px, 2.4vw, 32px);
   border: 1px solid var(--hairline);
   border-radius: var(--radius);
   background: rgba(255, 253, 249, 0.6);
@@ -514,9 +518,9 @@ textarea:focus-visible {
 }
 
 .service-number {
-  margin-bottom: 70px;
+  margin-bottom: 32px;
   color: var(--burgundy);
-  font-size: 0.78rem;
+  font-size: 0.875rem;
   font-weight: 600;
   letter-spacing: 0.14em;
 }
@@ -595,7 +599,7 @@ textarea:focus-visible {
 
 .process-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 1px;
   border: 1px solid var(--hairline);
   border-radius: var(--radius);
@@ -604,16 +608,16 @@ textarea:focus-visible {
 }
 
 .process-grid article {
-  min-height: 280px;
-  padding: 32px;
+  min-height: 210px;
+  padding: clamp(20px, 2.4vw, 32px);
   background: rgba(255, 253, 249, 0.86);
 }
 
 .process-grid article > span {
   display: block;
-  margin-bottom: 78px;
+  margin-bottom: 28px;
   color: var(--burgundy);
-  font-size: 0.78rem;
+  font-size: 0.875rem;
   font-weight: 600;
   letter-spacing: 0.14em;
 }
@@ -657,7 +661,7 @@ textarea:focus-visible {
   display: grid;
   gap: 8px;
   color: var(--taupe);
-  font-size: 0.82rem;
+  font-size: 0.9375rem;
   font-weight: 600;
 }
 
@@ -718,7 +722,7 @@ textarea:focus-visible {
   min-height: 24px;
   margin: -6px 0 0;
   color: var(--taupe);
-  font-size: 0.78rem;
+  font-size: 0.875rem;
   text-align: center;
 }
 
@@ -764,17 +768,17 @@ textarea:focus-visible {
 }
 
 .inner-hero {
-  padding: clamp(54px, 7vw, 106px) clamp(22px, 4vw, 64px)
-    clamp(72px, 8vw, 125px);
+  padding: clamp(28px, 3vw, 48px) clamp(22px, 4vw, 64px)
+    clamp(36px, 4vw, 64px);
   border-bottom: 1px solid var(--hairline);
 }
 
 .inner-hero--short {
-  padding-bottom: clamp(32px, 4vw, 56px);
+  padding-bottom: clamp(28px, 3vw, 48px);
 }
 
 .inner-hero--short .breadcrumbs {
-  margin-bottom: clamp(28px, 4vw, 56px);
+  margin-bottom: clamp(22px, 2.6vw, 40px);
 }
 
 .inner-hero--short .inner-lead {
@@ -782,16 +786,16 @@ textarea:focus-visible {
 }
 
 .inner-hero--short + .section {
-  padding-top: clamp(40px, 4vw, 64px);
+  padding-top: clamp(30px, 3.5vw, 52px);
 }
 
 .breadcrumbs {
   display: flex;
   flex-wrap: wrap;
   gap: 12px;
-  margin-bottom: clamp(70px, 8vw, 130px);
+  margin-bottom: clamp(26px, 3.5vw, 52px);
   color: var(--taupe);
-  font-size: 0.82rem;
+  font-size: 0.9375rem;
 }
 
 .breadcrumbs a:hover {
@@ -826,7 +830,7 @@ textarea:focus-visible {
 
 .service-summary span {
   color: var(--taupe);
-  font-size: 0.78rem;
+  font-size: 0.875rem;
   text-transform: uppercase;
   letter-spacing: 0.1em;
 }
@@ -840,6 +844,7 @@ textarea:focus-visible {
 
 .service-summary small {
   color: var(--taupe);
+  font-size: 1rem;
 }
 
 .cases-hero {
@@ -878,7 +883,7 @@ textarea:focus-visible {
 }
 
 .case-category {
-  padding-top: 74px;
+  padding-top: clamp(38px, 4vw, 62px);
   border-top: 1px solid var(--hairline);
 }
 
@@ -887,7 +892,7 @@ textarea:focus-visible {
   grid-template-columns: minmax(0, 1.25fr) minmax(300px, 0.55fr);
   gap: 80px;
   align-items: end;
-  margin-bottom: 44px;
+  margin-bottom: 30px;
 }
 
 .case-category-heading h2,
@@ -920,9 +925,9 @@ textarea:focus-visible {
   display: flex;
   justify-content: space-between;
   gap: 16px;
-  margin-bottom: 42px;
+  margin-bottom: 26px;
   color: var(--burgundy);
-  font-size: 0.76rem;
+  font-size: 0.875rem;
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -950,7 +955,7 @@ textarea:focus-visible {
 .case-card dt {
   margin-bottom: 6px;
   color: var(--burgundy);
-  font-size: 0.76rem;
+  font-size: 0.875rem;
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -1211,20 +1216,24 @@ textarea:focus-visible {
   border-top: 1px solid var(--hairline);
 }
 
-.contact-cards > :last-child {
+.contact-cards > div {
   grid-column: 1 / -1;
 }
 
 .contact-cards > * {
   display: grid;
   gap: 5px;
-  padding: 26px 0;
+  padding: 18px 0;
   border-bottom: 1px solid var(--hairline);
 }
 
 .contact-cards span {
   color: var(--taupe);
-  font-size: 0.82rem;
+  font-size: 0.9375rem;
+}
+
+.contact-cards .contact-address-label {
+  font-size: inherit;
 }
 
 .contact-cards b {
@@ -1234,6 +1243,20 @@ textarea:focus-visible {
   overflow-wrap: anywhere;
 }
 
+.contact-cards address {
+  font-style: normal;
+  overflow-wrap: anywhere;
+}
+
+.contact-cards address p {
+  margin: 0;
+}
+
+.contact-cards address p + p {
+  margin-top: 4px;
+  color: var(--taupe);
+}
+
 .contact-cards a:hover b {
   color: var(--burgundy);
 }
@@ -1241,7 +1264,7 @@ textarea:focus-visible {
 .legal-page {
   max-width: 980px;
   margin: 0 auto;
-  padding: clamp(54px, 7vw, 105px) 24px clamp(90px, 10vw, 150px);
+  padding: clamp(32px, 4vw, 64px) 24px clamp(52px, 5vw, 80px);
 }
 
 .legal-page h1 {
@@ -1271,11 +1294,11 @@ textarea:focus-visible {
   padding-top: 28px;
   margin-top: 50px;
   border-top: 1px solid var(--hairline);
-  font-size: 0.85rem;
+  font-size: 0.9375rem;
 }
 
 .site-footer {
-  padding: 70px clamp(22px, 4vw, 64px) 28px;
+  padding: 44px clamp(22px, 4vw, 64px) 24px;
   color: #f4ece6;
   background: #2d2020;
 }
@@ -1284,7 +1307,7 @@ textarea:focus-visible {
   display: grid;
   grid-template-columns: 1.4fr 1fr 0.8fr;
   gap: clamp(50px, 8vw, 130px);
-  padding-bottom: 65px;
+  padding-bottom: 36px;
 }
 
 .brand--footer {
@@ -1309,7 +1332,7 @@ textarea:focus-visible {
 .footer-top b {
   margin-bottom: 12px;
   color: #d8c9bf;
-  font-size: 0.76rem;
+  font-size: 0.875rem;
   letter-spacing: 0.14em;
   text-transform: uppercase;
 }
@@ -1326,7 +1349,7 @@ textarea:focus-visible {
   padding-top: 24px;
   color: #a99990;
   border-top: 1px solid rgba(212, 200, 187, 0.2);
-  font-size: 0.82rem;
+  font-size: 0.9375rem;
 }
 
 .footer-bottom > div {
@@ -1377,7 +1400,7 @@ textarea:focus-visible {
 
 .phone-popover span {
   color: var(--taupe);
-  font-size: 0.78rem;
+  font-size: 0.875rem;
 }
 
 .phone-popover a {
@@ -1419,7 +1442,7 @@ textarea:focus-visible {
   background: rgba(255, 253, 249, 0.92);
   box-shadow: 0 8px 24px rgba(45, 32, 32, 0.12);
   cursor: pointer;
-  font-size: 0.72rem;
+  font-size: 0.875rem;
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -1554,7 +1577,7 @@ textarea:focus-visible {
 .calendar-weekdays span {
   padding: 5px;
   color: var(--taupe);
-  font-size: 0.76rem;
+  font-size: 0.875rem;
   text-align: center;
 }
 
@@ -1587,7 +1610,7 @@ textarea:focus-visible {
   gap: 8px;
   margin: 10px 0 0;
   color: var(--taupe);
-  font-size: 0.82rem;
+  font-size: 0.9375rem;
 }
 
 .calendar-legend i {
@@ -2141,7 +2164,6 @@ textarea:focus-visible {
 
   .site-nav {
     gap: 14px;
-    font-size: 0.875rem;
   }
 
   .site-nav .button--small {
@@ -2153,7 +2175,7 @@ textarea:focus-visible {
   }
 
   .hero h1 {
-    font-size: clamp(3.3rem, 5.2vw, 5rem);
+    font-size: clamp(2.75rem, 4.5vw, 3.75rem);
   }
 
   .trust-strip > div {
@@ -2165,7 +2187,7 @@ textarea:focus-visible {
   }
 
   .service-card {
-    min-height: 350px;
+    min-height: 280px;
   }
 
   .values-grid {
@@ -2181,7 +2203,7 @@ textarea:focus-visible {
   }
 }
 
-@media (max-width: 920px) {
+@media (max-width: 1040px) {
   html {
     scroll-padding-top: 140px;
   }
@@ -2200,8 +2222,9 @@ textarea:focus-visible {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     display: grid;
     justify-content: stretch;
-    gap: 5px 18px;
-    font-size: 0.875rem;
+    gap: 5px 10px;
+    font-size: 1rem;
+    overflow-wrap: anywhere;
   }
 
   .header-contacts a:nth-child(even) {
@@ -2236,12 +2259,16 @@ textarea:focus-visible {
 
   .site-nav {
     position: absolute;
-    top: 140px;
+    top: 100%;
     left: 0;
     right: 0;
     display: none;
     align-items: stretch;
-    padding: 24px;
+    justify-self: stretch;
+    max-height: calc(100dvh - 176px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 16px 24px;
     border-bottom: 1px solid var(--hairline);
     background: var(--porcelain);
     box-shadow: var(--shadow);
@@ -2257,11 +2284,12 @@ textarea:focus-visible {
     padding: 12px 4px;
     border-bottom: 1px solid var(--hairline);
   }
+}
 
+@media (max-width: 920px) {
   .hero {
     grid-template-columns: 1fr;
     grid-template-areas: "copy" "art" "trust";
-    min-height: auto;
   }
 
   .hero-copy {
@@ -2348,12 +2376,8 @@ textarea:focus-visible {
 
 @media (max-width: 640px) {
   .header-contacts {
-    font-size: clamp(0.75rem, 3.5vw, 0.875rem);
-    letter-spacing: 0.015em;
-  }
-
-  body {
-    font-size: 16px;
+    font-size: 0.9375rem;
+    letter-spacing: 0;
   }
 
   h1,
@@ -2414,7 +2438,22 @@ textarea:focus-visible {
   .process-grid,
   .field-grid,
   .case-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .cases-summary {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .service-result blockquote {
+    font-size: clamp(1.75rem, 6.5vw, 2.4rem);
+  }
+
+  .service-result blockquote,
+  .values-grid article,
+  .process-grid article {
+    hyphens: auto;
+    overflow-wrap: anywhere;
   }
 
   .case-card:last-child {
@@ -2441,10 +2480,6 @@ textarea:focus-visible {
 
   .process-grid article {
     min-height: 240px;
-  }
-
-  .breadcrumbs {
-    margin-bottom: 70px;
   }
 
   .service-summary {
@@ -2593,6 +2628,17 @@ textarea:focus-visible {
     width: 100%;
     max-height: 92vh;
     border-radius: 24px 24px 0 0;
+  }
+}
+
+@media (max-width: 360px) {
+  .site-header {
+    padding-inline: 14px;
+  }
+
+  .header-contacts {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
+    column-gap: 6px;
   }
 }
 
